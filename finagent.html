@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>研报发布前质控预审 Agent · 魏楚琪</title>
-  <meta name="description" content="金融文档事实核查：字符级出处库、本地 9B 抽取模型、多 Agent 复查与封存验收的技术细节与实验数据。">
+  <title>研报数字核查 Agent · 魏楚琪</title>
+  <meta name="description" content="把研报里的每个数字对回上市公司年报原文的核查 Agent：演示视频与工作原理。">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -12,8 +12,7 @@
     <div class="wrap">
       <a class="brand" href="./">魏楚琪</a>
       <nav class="nav">
-        <a href="./#projects">项目</a>
-        <a class="nav-extra" href="pet.html">宠物多模态 Agent</a>
+        <a class="nav-extra" href="pet.html">宠物 Agent</a>
         <a href="mailto:muzibu77@gmail.com">联系</a>
       </nav>
     </div>
@@ -21,210 +20,92 @@
 
   <main class="wrap">
     <div class="page-head">
-      <a class="back" href="./#projects">← 返回项目</a>
-      <h1>研报发布前质控预审 Agent</h1>
-      <p class="subtitle">金融文档事实核查：字符级出处库 · 本地 9B 抽取模型 · 多 Agent 复查 · 封存验收</p>
-      <p class="meta">2026.03 – 2026.10 · 负责任务定义、架构设计、模型训练、评测与验收判据</p>
+      <a class="back" href="./">← 返回</a>
+      <h1>研报数字核查 Agent</h1>
+      <p class="subtitle">研报发出去之前，把里面的每个数字对回年报原文，错在哪、原文是多少、出处在哪一页。</p>
+      <p class="meta">2026.03 – 2026.10</p>
     </div>
 
     <div class="hero-video">
-      <video controls preload="metadata" playsinline poster="assets/img/finagent-poster.jpg">
+      <video id="v-fin" controls preload="metadata" playsinline poster="assets/img/finagent-poster.jpg">
         <source src="assets/video/finagent-demo.mp4" type="video/mp4">
       </video>
     </div>
-    <p class="caption">演示：一篇比亚迪 2024 年年报点评依次经过抽取 Agent（本地 9B）、确定性核查、复查 Agent、修订 Agent，最后点击稿件中的数字，右侧打开原件 PDF 并框出出处。</p>
+    <ul class="chapters" data-chapters="v-fin">
+      <li><button data-t="0"><time>0:00</time>提交稿件</button></li>
+      <li><button data-t="3"><time>0:03</time>抽取与核对</button></li>
+      <li><button data-t="9"><time>0:09</time>复查 Agent</button></li>
+      <li><button data-t="15"><time>0:15</time>修订建议</button></li>
+      <li><button data-t="24"><time>0:24</time>点数字看原件</button></li>
+      <li><button data-t="35"><time>0:35</time>系统结构</button></li>
+    </ul>
 
-    <div class="layout">
-      <nav class="toc" aria-label="目录">
-        <p>目录</p>
-        <ol>
-          <li><a href="#overview">问题与架构</a></li>
-          <li><a href="#task">任务定义</a></li>
-          <li><a href="#source">可溯源出处库</a></li>
-          <li><a href="#evalset">逐数字核实评测集</a></li>
-          <li><a href="#baseline">免训练基线</a></li>
-          <li><a href="#train">本地抽取模型训练</a></li>
-          <li><a href="#agents">多 Agent 编排</a></li>
-          <li><a href="#accept">封存验收与误差分析</a></li>
-          <li><a href="#deploy">部署与人工核查</a></li>
-          <li><a href="#limits">边界与遗留</a></li>
-        </ol>
-      </nav>
+    <section class="block story">
+      <h2>为什么做这个</h2>
+      <p>研报里引用的营收、增速、利润，都应该能在公司年报里找到原文。但质控的人手有限，点评又要赶时间，监管检查里“引用和原文对不上、日期写错”是反复出现的问题。</p>
+      <p>现在越来越多人用 AI 帮忙写稿，问题更明显：AI 写得很流畅，数字却经常是错的。我实测让通用大模型写年报点评，不给它原文时，大部分数字都有错；就算把原文给它，仍有一成左右的数字出错。</p>
+    </section>
 
-      <article class="doc">
-        <section id="overview">
-          <h2><span class="num">01</span>问题与架构</h2>
-          <p>研报里的数字要逐条对回原文，质控人手少、点评时效紧；监管现场检查通报反复点名“引用与原文不一致、来源未核实、日期错误、底稿缺失”。一个具体的导火索：有分析师用 AI 写周报，把 2024 年的国常会表述标成了 2026 年的新政策，模型写得很流畅，但数字和时点站不住。</p>
-          <div class="callout"><b>核心判断：</b>不让模型“审稿”。模型只负责把稿件里的数字抽成结构化断言，结论由确定性代码对回出处库给出；查不到依据的交给人，不替人下结论。</div>
-          <div class="flow">
-            <div class="node"><b>稿件</b><span>研报 / 点评</span></div>
-            <div class="arrow">→</div>
-            <div class="node key"><b>抽取 Agent</b><span>本地 Qwen3.5-9B LoRA</span></div>
-            <div class="arrow">→</div>
-            <div class="node key"><b>确定性核查</b><span>出处库 · 截止日 · 更正覆盖</span></div>
-            <div class="arrow">→</div>
-            <div class="node"><b>复查 Agent</b><span>只能新增告警</span></div>
-            <div class="arrow">→</div>
-            <div class="node"><b>修订 Agent</b><span>只改判错的数字</span></div>
-            <div class="arrow">→</div>
-            <div class="node"><b>工作底稿</b><span>来源、页码、字符区间</span></div>
+    <section class="block">
+      <div class="story"><h2>系统怎么运作</h2></div>
+      <div class="flow">
+        <div class="node"><b>研报稿件</b><span>任意一篇点评</span></div>
+        <div class="arrow">→</div>
+        <div class="node key"><b>抽取</b><span>本地 9B 模型找出每个数字</span></div>
+        <div class="arrow">→</div>
+        <div class="node key"><b>核对</b><span>代码去年报库里查原文</span></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>复查 Agent</b><span>补查疑难数字</span></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>修订 Agent</b><span>给出改写建议</span></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>核查底稿</b><span>每个数字都附出处</span></div>
+      </div>
+      <div class="story">
+        <p>背后是一个年报库：30 家上市公司、两万五千多页年报和更正公告，表格里的每个数字都记下了它在 PDF 上的位置，一共 53.7 万条。核对时只用稿件写作日期之前已经发布的文件，避免拿“后来才公布的数”去判当时的稿子。</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="story"><h2>几个有意思的地方</h2></div>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-img"><img src="assets/img/finagent-shot-evidence.jpg" alt="点击稿件中的数字，右侧显示年报原文出处" loading="lazy"></div>
+          <div>
+            <h3>每个数字都能点回原文</h3>
+            <p>点一下稿件里的“7,771.02 亿元”，右边直接显示它出自比亚迪 2024 年年报第几页、原文写的是 777,102,455 千元、换算后是否一致，还能打开 PDF 原件看框出来的位置。</p>
+            <p>审核的人不用再自己翻年报，只需要确认系统给的证据。</p>
+            <span class="figure"><b>53.7 万条</b>年报数字，都能定位到 PDF 原文</span>
           </div>
-          <p>项目按“定义任务 → 出处库 → 评测集 → 免训练基线 → 只训最弱环节 → 多 Agent 产品化 → 一次性验收”推进，每个阶段先写定判据再运行。</p>
-        </section>
-
-        <section id="task">
-          <h2><span class="num">02</span>任务定义</h2>
-          <ul>
-            <li><strong>9 类可由程序复核的错误</strong>：改数字、单位、期间、口径、增速分母、更正后仍引用旧值、日期、出处、稿内前后不一致。</li>
-            <li><strong>4 类结论</strong>：一致 / 不一致（附原文值）/ 找不到依据 / 口径不明。</li>
-            <li><strong>舍入规则</strong>：末位半个单位内算一致，一个单位内记为舍入差；超出舍入范围的才算“实质性错误”。</li>
-            <li>核对需求依据时逐个打开调研来源原文；其中一个保荐处罚案例实为现场检查发现的实质问题，不能证明“文档比对可发现”，据此把招股书一致性核查降为可选扩展。</li>
-          </ul>
-        </section>
-
-        <section id="source">
-          <h2><span class="num">03</span>可溯源出处库</h2>
-          <h3>采集：带披露日的原始文件</h3>
-          <p>从巨潮资讯下载 30 家发行人 2023–2025 财年年报 90 份与更正公告 2 份，共 <strong>25,224 页</strong>；另采集国常会、国务院、统计局、发改委、央行、证监会的政策与统计发布 1,855 篇。每份记录披露日与 SHA256，请求被拒、正文提取失败等情况写入收据。</p>
-          <h3>解析：以 PDF 文本层为准</h3>
-          <dl class="decision">
-            <dt>做法</dt><dd>MinerU 解析版面与表格，再把每个数值单元格对回 PDFium 文本层的字符区间和位置框；对不上的数字不进入事实库，也不做修正。为每个数字绑定行标签、列表头、单位与合并 / 母公司口径，缺失字段留空不猜。</dd>
-            <dt>取舍</dt><dd>四份年报 41 页上对比两档解析：轻量档快 20–80 倍，但认错 13 个数字（全部被文本层对照拦下）；标准档没有认错。</dd>
-            <dt>提速</dt><dd>发现 MinerU 自带的 llama.cpp 只打包了 CPU 后端（运行时 GPU 占用为 0），改用 vLLM 在 GPU 上提供 1.2B 文档模型服务：12 页耗时 1,248 s → <strong>21 s</strong>，绑定结果与 CPU 版完全相同；全量 25,224 页 456 分钟、0 份失败。</dd>
-            <dt>结果</dt><dd>补充窄列逐字换行等版式规则后，对不上文本层的表格数字 19,194 → 8,678；最终沉淀约 <strong>53.7 万条</strong>带原文字符位置的表格事实，写入 SQLite，支持按数字精确查找与按发行人、截止日过滤的 BM25 页面检索。</dd>
-          </dl>
-          <h3>质检：53 万条没法人工抽 10%，改成两层核查</h3>
-          <ul>
-            <li>按 id 等距抽 10,134 条，用存储的字符区间回取原文，全部一致。</li>
-            <li>用相邻年度年报的上期列做自动交叉验证，印证 69,915 条（13.1%）事实的数值、行标签与列角色；两边都有单位时单位不一致率 0.35%。</li>
-            <li>12 页 260 条整页人工核对，查出的 5 条单位 / 类型错误已修入规则。</li>
-          </ul>
-          <h3>时点控制</h3>
-          <p>核查只使用写稿日及以前披露的文件，并以更正公告覆盖旧数，避免用“未来才公布的信息”判定当时的稿件。</p>
-        </section>
-
-        <section id="evalset">
-          <h2><span class="num">04</span>逐数字核实评测集</h2>
-          <ul>
-            <li><strong>先划分再生成</strong>：按行业交错把 30 家发行人划为训练 / 开发 / 验收 16 / 6 / 8 家并冻结。阶段 1 调规则时看过验收发行人的页面，因此只承诺抽取、核查与训练没有见过验收发行人的评测样本。</li>
-            <li><strong>注入错误</strong>：从三大报表生成正确断言，每条只做一次有记录的改动得到错误断言；用两起真实财务更正生成“更正后仍引用旧值”。冻结训练 38,798 / 开发 2,049 / 验收 2,038 条，以 <code>lock.json</code> 记录哈希。</li>
-            <li><strong>真实写稿错误</strong>：用两个通用模型在“给 / 不给合并报表原文”两种条件下写 352 篇年报点评，对其中 <strong>12,309 个</strong>数字逐条核实，每个标签附原文字符区间或事实编号及推导算式。按固定种子抽 10% 交叉复核，一致率 96.9%–99.1%。</li>
-          </ul>
-          <div class="kpis">
-            <div class="stat"><b>77%–84%</b><span>不给原文时，模型写稿的数字错误率</span></div>
-            <div class="stat"><b>7%–12%</b><span>给了原文仍然出错的比例</span></div>
-            <div class="stat"><b>1,898</b><span>弱标签判“有依据”但实际错误的数字</span></div>
-            <div class="stat"><b>352 篇</b><span>两个模型、两种条件写成的点评</span></div>
+        </div>
+        <div class="feature">
+          <div class="feature-img"><img src="assets/img/finagent-shot-extract.jpg" alt="抽取 Agent 找出数字，核查器逐条对比原文" loading="lazy"></div>
+          <div>
+            <h3>不让大模型当裁判</h3>
+            <p>最直接的做法是把稿件和年报一起丢给大模型，让它挑错。我试过，它会漏掉很多错，而且漏得很自信。</p>
+            <p>所以这里模型只负责一件事：把稿件里的数字找出来、标清楚是哪个科目。对不对由代码去年报库里查，查不到就交给人，不替人下结论。抽取用的是我自己微调的 9B 小模型，稿件可以不出本机。</p>
+            <span class="figure"><b>0 vs 111</b>没参与过调试的稿件上，实质性错误的漏检数（本系统 vs 大模型直接审稿）</span>
           </div>
-          <p>给原文时的错误主要是舍入、把母公司数当合并数和计算错误。按“年报里能否找到这个数”打的弱标签不可靠，评测一律以核实标签为准。</p>
-        </section>
-
-        <section id="baseline">
-          <h2><span class="num">05</span>免训练基线：抽取与判定分开</h2>
-          <p>模型把点评中的数字抽成结构化断言，科目只能从该年报合并报表的科目清单中选；确定性核查器按截止日过滤、以更正公告覆盖、同比优先取当年年报的本期 / 上期两列，并对“不一致”判断错因。比率、自有口径指标等无法判断的情况交给人工。</p>
-          <p>首版出现 10 条误报，定位为上年比较数已被重述；改取当年年报两列后降为 0。</p>
-          <h3>在未参与规则开发的数据上独立检验</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>训练部分 192 篇 · 6,830 个数字</th><th class="num">核查流程</th><th class="num">同一模型直接读原文审稿</th></tr></thead>
-              <tbody>
-                <tr><td>错误召回率</td><td class="num">62.7%</td><td class="num">39.8%</td></tr>
-                <tr><td>实质性错误漏检</td><td class="num"><strong>2</strong></td><td class="num">323</td></tr>
-                <tr><td>误报率</td><td class="num">4.1%</td><td class="num">—</td></tr>
-              </tbody>
-            </table>
+        </div>
+        <div class="feature">
+          <div class="feature-img"><img src="assets/img/finagent-shot-revise.jpg" alt="修订 Agent 只改写判错的那个数字" loading="lazy"></div>
+          <div>
+            <h3>复查 Agent 只能报警，不能放行</h3>
+            <p>代码查不到的数字，交给复查 Agent 去翻年报、做计算。对比下来发现：它说“这个数错了”基本都对，但它说“这个数没问题”时会混进错误。</p>
+            <p>所以规则定成：复查 Agent 只能把数字标成“有问题”，不能把数字放行。修订 Agent 也只改判错的那一个数字，句子其他部分由代码检查必须一字不变。</p>
+            <span class="figure"><b>95.3%</b>的错误被找出，误报 2.95%</span>
           </div>
-          <p class="table-note">直接审稿时，给原文写成的稿件里 320 个细小错误（口径、计算、取错行）只判出 6 个。误报集中在银行（开发集没有银行），如实记为规则对开发集过拟合。</p>
-        </section>
+        </div>
+      </div>
+    </section>
 
-        <section id="train">
-          <h2><span class="num">06</span>本地抽取模型训练</h2>
-          <dl class="decision">
-            <dt>为什么训</dt><dd>Qwen3.5-9B 免训练抽取在“不漏检”上与 API 模型相当，但开发集误报 46、抽取遗漏 77（API 模型为 10、18）。差距集中在抽取的准确性与完整性，所以只训练抽取环节，暂不换 27B。</dd>
-            <dt>协议</dt><dd>只改“是否训练”一个因素；用 192 篇训练集点评的核实标签监督，不以 API 模型为教师。训练前写定五项采用门槛：实质性错误漏检为 0、误报 ≤ 15、确认 ≥ 900、遗漏 ≤ 25 等。</dd>
-            <dt>显存</dt><dd>最长样本 9,735 token，单张 4090 放不下：FSDP 分片冻结权重；首次试跑在全序列 logits 转 FP32 时溢出，改为只对受监督位置分块计算交叉熵，在真实模型上与原实现数值一致。rank 16、72 次更新、约 40 分钟，峰值 14.6 GiB / 卡；评测用 vLLM 原生 LoRA，四卡各起一个服务并行。</dd>
-            <dt>结果</dt><dd>开发集误报 <strong>46 → 7</strong>、遗漏 <strong>77 → 4</strong>、确认正确数字 834 → 913，误报与遗漏均少于 API 模型。</dd>
-          </dl>
-          <div class="callout warn"><b>如实记录：</b>训练后暴露出核查器按绝对值比较比率的符号漏洞（−8.3% 被判一致）。修正发生在看过开发集之后，因此只记为“有条件通过”，以验收集为准。</div>
-        </section>
-
-        <section id="agents">
-          <h2><span class="num">07</span>多 Agent 编排</h2>
-          <h3>LangGraph 流程与权限</h3>
-          <ul>
-            <li><strong>抽取 Agent</strong> 只看稿件与科目清单；<strong>确定性核查器</strong>给出结论；<strong>复查 Agent</strong> 只处理交给人工的数字，用工具检索与计算；<strong>修订 Agent</strong> 只为判不一致的数字写改写句；最后生成工作底稿。</li>
-            <li>模型节点失败时不抛出：抽取失败则全部交给人工，其他节点失败只记录错误。</li>
-            <li>修订建议由代码核对“除该数字外逐字不变”，628 条中 627 条通过，抽 30 条人工复核全对。</li>
-          </ul>
-          <h3>先对照单 Agent，再定混合规则</h3>
-          <p>同一模型配 <code>find_number</code>、<code>search_pages</code>、<code>page_text</code>、<code>calculate</code> 四个受限工具直接审稿（截止日后披露的文件拒绝读取，计算用 AST + Decimal，不用 <code>eval</code>）。</p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>开发集</th><th class="num">单 Agent 直接审稿</th><th class="num">流程 + 复查只能新增告警</th></tr></thead>
-              <tbody>
-                <tr><td>错误召回率</td><td class="num">85.8%</td><td class="num">93.4%</td></tr>
-                <tr><td>实质性错误漏检</td><td class="num">14</td><td class="num"><strong>0</strong></td></tr>
-                <tr><td>每篇花费</td><td class="num">流程的约 9 倍</td><td class="num">—</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p>两组结果交叉后发现：Agent 在流程交给人工的数字上判“错误”几乎都对，判“正确”却会混入错误。质控最不能接受漏检，于是规定<strong>复查 Agent 只能把数字标为不一致</strong>，判“正确”只作排序提示，数字仍交给人。</p>
-          <h3>按数据删除无效节点</h3>
-          <p>稿内前后一致性节点在真实稿件上产生的 19 组发现，经逐条人工核对全部是误报（模型写的点评很少自相矛盾），因此从流程中移除；该类错误改由核查器在模板断言上覆盖（200 / 200）。</p>
-        </section>
-
-        <section id="accept">
-          <h2><span class="num">08</span>封存验收与误差分析</h2>
-          <p>验收集为 8 家未参与开发的发行人、94 篇点评、<strong>3,256 个</strong>人工核实的数字，错误都是模型写稿中真实出现的，不是人工注入。候选版本冻结到具体提交，结果不再用于调参。预先写定五项判据：H1 安全（实质性错误漏检 ≤ 1）、H2 本地模型可替代 API、H3 训练有效，混合方案另写补充协议 H4 不新增漏检、H5 召回率至少提高 15 个百分点。</p>
-          <div class="kpis">
-            <div class="stat"><b>95.3%</b><span>错误召回率</span></div>
-            <div class="stat"><b>0</b><span>实质性错误漏检</span></div>
-            <div class="stat"><b>2.95%</b><span>误报率</span></div>
-            <div class="stat"><b>111</b><span>同一模型直接读原文审稿的漏检</span></div>
-          </div>
-          <p>H1–H5 全部通过。复查 Agent 标出 688 个，其中真实错误 645 个；本地 9B LoRA 抽取的误报率、确认率不劣于 API 模型，相对免训练 9B 误报更低、确认更高、遗漏更少（按点评篇配对 bootstrap 区间均不含 0）。</p>
-          <h3>误差分析：瓶颈在数据层，不在模型</h3>
-          <p>验收集上约一半正确数字仍交给人工。按发行人拆分后集中在三家公司，原因是这些年报的报表在出处库中没有绑定上，而不是抽取模型。所以改出处库而不是继续训练：对 MinerU 把整列挤成一格的报表页改从 PDF 文本层逐行生成事实，采用附注中针对“报表”的单位声明。</p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>指标</th><th class="num">前</th><th class="num">后</th></tr></thead>
-              <tbody>
-                <tr><td>出处库改进：交给人工的正确数字（验收集，复用后仅作参考）</td><td class="num">845</td><td class="num"><strong>379</strong></td></tr>
-                <tr><td>出处库改进：正确数字确认率</td><td class="num">49%</td><td class="num">75%</td></tr>
-                <tr><td>加入复查 Agent 前后的召回率（训练集 6,830 个数字独立检验，运行前写定判据）</td><td class="num">64.7%</td><td class="num"><strong>93.4%</strong></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="table-note">独立检验中确认数完全不变、没有新增漏检，误报率仅 +0.05 个百分点；复查 Agent 标出 801 个，精确率 97.0%。按关键词只返回命中行等方式，复查环节花费降低 43%。</p>
-        </section>
-
-        <section id="deploy">
-          <h2><span class="num">09</span>部署与人工核查</h2>
-          <ul>
-            <li><strong>本地复查 Agent 不达标</strong>：为让稿件不出本机，只把复查与修订 Agent 换成免训练 Qwen3.5-9B。判出率 70.3%（API 模型 96.3%），66 篇中 36 篇的复查答案无法解析；安全底线守住但未达标。部署采用“本地抽取 + API 复查”，复查本地化需要另训复查模型。</li>
-            <li><strong>人工核查证据页</strong>：交给人工的数字里，错误数字约 30% 带有 Agent“认为一致”的提示，因此页面把提示标为“参考，不作结论”。点击稿件中的数字，右侧显示原件 PDF 并框出位置（抽 20 张核对，19 张正确）、折算到稿件单位的候选值与 Agent 查证摘要；快捷键点选“一致 / 确有错误 / 跳过”，反馈只追加记录，不改底稿结论。</li>
-            <li><strong>让 Agent 自报证据失败，改由代码回填</strong>：要求复查 Agent 引用出处库事实编号，判出率 96.3% → 87.5%，编号多被写成“f1”之类的占位符，因此撤回；改为由代码记录 Agent 检索到的事实并回填进底稿，不改任何结论，开发集 59 / 59 正确。</li>
-            <li><strong>工程</strong>：stdio MCP 服务（<code>check_draft</code> 与三个查询工具），LangChain 模型适配层同时支持 API 与本机 vLLM；SSE 推送节点进度与抽取流式输出；268 项 CPU 测试全部通过；API 只用一个低价模型，全项目约 35 美元。</li>
-          </ul>
-        </section>
-
-        <section id="limits">
-          <h2><span class="num">10</span>边界与遗留</h2>
-          <ul>
-            <li>改进后仍有约四分之一正确数字需要人工确认。</li>
-            <li>复查 Agent 还没有本地化，稿件完全不出本机需要另训复查模型。</li>
-            <li>评测稿件是模型写的，不是分析师的真实稿件；也还没有与真实质控人员做用时对比，业务价值有待验证。</li>
-            <li>比亚迪 2023 年续表页有 180 条事实仍缺单位。</li>
-          </ul>
-        </section>
-      </article>
-    </div>
+    <div class="closing">更多实现细节（模型训练、评测集构建、验收方法）欢迎面聊：<a href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a></div>
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
-      <span>魏楚琪 · <a href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a></span>
-      <a href="pet.html">← 上一个项目：宠物多模态理解与意图 Agent</a>
+      <a href="pet.html">← 上一个：宠物意图理解 Agent</a>
+      <a href="./">返回首页</a>
     </div>
   </footer>
   <script src="assets/site.js"></script>

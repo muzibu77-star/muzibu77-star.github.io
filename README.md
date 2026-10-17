@@ -3,13 +3,13 @@
 纯静态网站，无构建步骤，可直接部署到 GitHub Pages。
 
 ```
-index.html        首页：简介 + 两个项目的演示视频与核心指标
-pet.html          宠物多模态理解与意图 Agent：技术细节与实验数据
-finagent.html     研报发布前质控预审 Agent：技术细节与实验数据
+index.html        首页：两个项目的演示视频（带章节跳转）
+pet.html          宠物意图理解 Agent：演示、为什么做、怎么运作、三个看点
+finagent.html     研报数字核查 Agent：同上
 assets/style.css  样式（自动跟随系统亮 / 暗色）
-assets/site.js    详情页目录高亮
+assets/site.js    视频章节跳转
 assets/video/     演示视频（pet-demo 为原 4K 版转 1080p；finagent-demo 为原文件加 faststart）
-assets/img/       视频封面
+assets/img/       视频封面与看点截图（从演示视频中截取）
 ```
 
 ## 部署到 GitHub Pages
