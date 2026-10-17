@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>宠物多模态理解与意图 Agent · 魏楚琪</title>
+  <meta name="description" content="六轴 IMU 行为识别、Qwen2.5-Omni 音视频领域模型与 LangGraph 意图 Agent 的技术细节与实验数据。">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">魏楚琪</a>
+      <nav class="nav">
+        <a href="./#projects">项目</a>
+        <a class="nav-extra" href="finagent.html">研报质控 Agent</a>
+        <a href="mailto:muzibu77@gmail.com">联系</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <a class="back" href="./#projects">← 返回项目</a>
+      <h1>宠物多模态理解与意图 Agent</h1>
+      <p class="subtitle">六轴 IMU 行为识别 × Qwen2.5-Omni 音视频理解 × LangGraph 多 Agent 证据决策</p>
+      <p class="meta">深圳市宠智联科技有限公司 · 大模型工程师 · 2026.05 – 至今 · 独立负责算法研发与交付（采集与硬件由团队协作）</p>
+    </div>
+
+    <div class="hero-video">
+      <video controls preload="metadata" playsinline poster="assets/img/pet-poster.jpg">
+        <source src="assets/video/pet-demo.mp4" type="video/mp4">
+      </video>
+    </div>
+    <p class="caption">演示：案例 1 画面与六轴一致，直接作答；案例 2 画面出现咬食动作、六轴却记录为舔毛 / 休息，Agent 不下结论、先追问主人，拿到回答后从 checkpoint 恢复并重新判断。</p>
+
+    <div class="layout">
+      <nav class="toc" aria-label="目录">
+        <p>目录</p>
+        <ol>
+          <li><a href="#overview">问题与整体架构</a></li>
+          <li><a href="#imu">六轴行为识别与端侧交付</a></li>
+          <li><a href="#omni">Omni 音视频领域模型</a></li>
+          <li><a href="#ablation">音轨消融与统计检验</a></li>
+          <li><a href="#agent">意图 Agent 设计</a></li>
+          <li><a href="#harness">Harness 与服务化</a></li>
+          <li><a href="#eval">Agent 评测</a></li>
+          <li><a href="#ext">扩展模块对照</a></li>
+          <li><a href="#limits">边界与遗留</a></li>
+        </ol>
+      </nav>
+
+      <article class="doc">
+        <section id="overview">
+          <h2><span class="num">01</span>问题与整体架构</h2>
+          <p>主人理解宠物有两个难点：白天不在家，不知道它一天做了什么；就算面对面，也常看不懂它想要什么。前者交给项圈上的六轴传感器持续记录，后者交给音视频模型分析主人拍的视频。</p>
+          <p>但只看视频不够。同一个动作在不同时间含义不同：早上蹲在门口多半是要上厕所，下午做同样的动作可能只是想出去玩，单段视频看不到这些上下文。所以再加一层意图 Agent，把“此刻的视频判断”和“这只宠物自己的长期六轴记录”放在一起对照。</p>
+          <div class="lanes">
+            <p class="lane-label">传感</p>
+            <div class="flow">
+              <div class="node"><b>项圈六轴 25 Hz</b><span>加速度 + 角速度</span></div>
+              <div class="arrow">→</div>
+              <div class="node"><b>行为识别模型</b><span>猫 11 类 / 狗 10 类</span></div>
+              <div class="arrow">→</div>
+              <div class="node"><b>行为段</b><span>类别、置信度、起止时间</span></div>
+            </div>
+            <p class="lane-label">感知</p>
+            <div class="flow">
+              <div class="node"><b>宠物视频</b><span>画面 + 原始音轨</span></div>
+              <div class="arrow">→</div>
+              <div class="node"><b>Omni 领域模型</b><span>Qwen2.5-Omni-7B + LoRA</span></div>
+              <div class="arrow">→</div>
+              <div class="node"><b>结构化输出</b><span>类别、可见信号、声音线索、依据</span></div>
+            </div>
+            <p class="lane-label">决策</p>
+            <div class="flow">
+              <div class="node key"><b>意图 Agent</b><span>三层六轴证据 + 视频判断</span></div>
+              <div class="arrow">→</div>
+              <div class="node"><b>一致则作答</b><span>附证据编号</span></div>
+              <div class="arrow">→</div>
+              <div class="node"><b>冲突则追问</b><span>记住主人纠正</span></div>
+            </div>
+          </div>
+          <p>三块共用一套口径：Agent 查六轴记录时直接调用六轴项目的切窗函数、真实数据模型和线上服务的行为稳定状态机，没有另写一份，离线查到的行为段和 App 上显示的是同一个结果。</p>
+        </section>
+
+        <section id="imu">
+          <h2><span class="num">02</span>六轴行为识别与端侧交付</h2>
+          <h3>数据：先解决采集质量，再谈模型</h3>
+          <ul>
+            <li>10 台设备、1,024 个标注片段，整理出 1,009 个有效片段、212,800 行数据。</li>
+            <li>发现特定设备重复帧约 44%、有效采样率只有约 14 Hz；统一插值到 25 Hz 并保留插值标记，问题片段清单反馈给采集端。</li>
+            <li><strong>不能按窗口随机划分</strong>：3 秒窗口、1 秒滑动，相邻窗口有三分之二重叠，随机划分等于让模型做见过的题。改为按源片段分组做 5 折，再补设备级留出，分别看分类能力和跨设备迁移。</li>
+          </ul>
+          <h3>表征与模型</h3>
+          <ul>
+            <li><strong>重力坐标表征</strong>：用窗口平均加速度估计重力方向，把信号转成竖直、水平分量与模长，降低对佩戴角度的依赖；对应消融中猫侧 macro-F1 提升约 0.06。</li>
+            <li><strong>无标签预训练</strong>：81.2 小时、282,842 个窗口做掩码重建预训练。按传感器量程缩放会把日常动作压成近似平线，改用逐通道 z-score 后，同配置对照 macro-F1 提升 0.052。</li>
+            <li><strong>分层路由</strong>：单阶段模型的动态类都在 0.94 以上，但趴、坐、站只差重力方向上的细微差别，被动态类淹没；拆成“动态 / 静态”两阶段，让静态姿态在不受干扰的模型里单独学习。</li>
+          </ul>
+          <h3>端侧：量化失败推动模型重设计</h3>
+          <dl class="decision">
+            <dt>问题</dt><dd>服务端两阶段模型训练后量化（PTQ）为 INT8，最终类别一致率只有 56.94%，未通过验收。</dd>
+            <dt>做法</dt><dd>重新设计 32 / 64 通道、ReLU6 的压缩网络，做量化感知训练（QAT），让模型在训练时就适应整数舍入误差。</dd>
+            <dt>结果</dt><dd>每个阶段约 21.6 KB，INT8 与 QAT 模型类别输出完全一致；在 256 KiB ROM、96 KiB 连续 RAM 的预算内使用固定 64 KiB tensor arena，随包交付 C 接口与 9 类测试向量供硬件团队逐窗对账。</dd>
+          </dl>
+          <h3>实时服务</h3>
+          <p>MQTT 接收项圈数据，按设备缓冲切窗，从 Redis 读设备绑定的物种选择猫 / 狗模型，输出经行为稳定状态机（指数加权概率 + 持续领先确认 + 短时回跳保护）后写入 PostgreSQL，并通过 Redis 通知业务服务。数据库暂不可用时识别和通知照常进行，恢复后补写。2026.08 接入项圈与 App。</p>
+        </section>
+
+        <section id="omni">
+          <h2><span class="num">03</span>Omni 音视频领域模型</h2>
+          <h3>数据契约</h3>
+          <p>行为判断需要专业知识，普通标注员标不准。流程是模型初标 → 训犬师 / 猫行为分析师逐条复核 → 进入训练与评测；最终猫 207 条训练、64 条评测，狗 230 条训练、34 条评测。类别、可见信号、声音线索都只能从固定词表里选，只有分析依据是自由文本，这样训练前可以程序化拦截不合法样本，评测时可以精确比对。</p>
+          <h3>两代方案</h3>
+          <dl class="decision">
+            <dt>第一代</dt><dd>Qwen3.5-27B + CLAP：CLAP 把音轨编码成 512 维向量，投影成 8 个前缀 token 注入 <code>inputs_embeds</code>，前缀区间 labels 设为 -100。目的是把画面和声音拆开，单独开关某一路来观察影响。</dd>
+            <dt>问题</dt><dd>整段音轨被压成一个向量，丢掉了“这一声出现在第几秒”；音频通路只靠两百多条数据训练的投影层，天然偏弱；27B 单卡显存约 52 GiB、单条生成十几秒，不适合上线。</dd>
+            <dt>第二代</dt><dd>迁移到 Qwen2.5-Omni-7B Thinker，按 2 fps 采样视频帧并配同窗口原始音轨，用原生 TMRoPE 做音画时间对齐。代价是行为信号词表吻合度约减半；换来显存减半以上、训练快 6–8 倍、单条生成快 3 倍以上，以及有时间信息的声音。</dd>
+          </dl>
+          <h3>排障：训练与推理模板不一致</h3>
+          <p>第一代评测时狗侧必填字段合规率只有 36.84%。先不看指标，逐条打开失败样本的原始输出，发现都是 JSON 前面多了一两千字的自由推理。训练数据是“空思考段后直接输出 JSON”，但推理代码调用 chat template 时没有显式传 <code>enable_thinking=False</code>，模板默认打开了思考段。</p>
+          <p>同一个 checkpoint 只改这一个参数做 A/B：狗侧合规率 36.84% → <strong>100%</strong>，猫侧 46.97% → <strong>100%</strong>；猫侧分类准确率（正常与静音两种条件共 132 次评测）同时 +10.61 个百分点，整个修复不需要重训。</p>
+          <h3>领域 LoRA 对比原厂基座</h3>
+          <p>在同一个评测入口加 <code>--base-model-only</code> 开关，只跳过加载 LoRA 权重，评测集、提示词、抽帧、音频输入和解码参数全部走同一份代码。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>指标</th><th class="num">猫（64 条）</th><th class="num">狗（34 条）</th></tr></thead>
+              <tbody>
+                <tr><td>主类别准确率提升</td><td class="num"><span class="up">+15.6</span> pp</td><td class="num"><span class="up">+41.2</span> pp</td></tr>
+                <tr><td>配对 bootstrap 95% 区间</td><td class="num">[+4.7, +26.6]</td><td class="num">[+23.5, +58.8]</td></tr>
+                <tr><td>McNemar 精确检验</td><td class="num">p ≈ 0.013</td><td class="num">p ≈ 0.0005</td></tr>
+                <tr><td>JSON 必填字段合规率</td><td class="num">—</td><td class="num">82.4% → 100%</td></tr>
+                <tr><td>平均生成 token</td><td class="num">—</td><td class="num">274.1 → 85.5</td></tr>
+                <tr><td>单条生成耗时（A100-80GB）</td><td class="num">4.74 → 3.66 s</td><td class="num">10.33 → 3.61 s</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">变快不是因为模型变小：原厂基座狗侧有 6 条陷入重复生成、JSON 没闭合，微调后学会了固定四字段格式，写完就停。</p>
+        </section>
+
+        <section id="ablation">
+          <h2><span class="num">04</span>音轨消融与统计检验</h2>
+          <p>分类答对了，不代表模型用上了声音。固定同一 checkpoint、提示词、画面和贪心解码，只换音轨做三个条件：</p>
+          <ul>
+            <li><strong>正常</strong>：视频原始音轨。</li>
+            <li><strong>静音</strong>：同长度无声音轨。保持音频 token 数和音画交错结构不变，只有内容变成空白；直接删掉音轨会同时改变输入格式。</li>
+            <li><strong>错配</strong>：换成另一段视频的音轨（不同源视频、不同类别、声音类型不重合，分配过程确定且可追溯）。静音只能说明“有没有声音”有影响，错配才能说明模型用的是声音的<em>内容</em>。</li>
+          </ul>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>对照</th><th class="num">猫（64 条）</th><th class="num">狗（34 条）</th></tr></thead>
+              <tbody>
+                <tr><td>正常 vs 静音</td><td class="num"><span class="up">+14.1</span> pp · [+3.1, +25.0] · p=0.022</td><td class="num"><span class="up">+17.6</span> pp · [+5.9, +32.4] · p=0.031</td></tr>
+                <tr><td>正常 vs 错配</td><td class="num"><span class="up">+18.8</span> pp · [+7.8, +31.3] · p=0.004</td><td class="num"><span class="up">+17.6</span> pp · [+5.9, +32.4] · p=0.031</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">区间为配对 bootstrap 2,000 次的 95% 百分位区间；p 为 McNemar 精确检验。</p>
+          <p>结论：模型确实用了声音内容，但分类仍以画面为主，三种条件下预测完全不变的猫有 28 条、狗 22 条；声音的帮助集中在亲和索求、防御性攻击等少数场景。</p>
+          <h3>预先写定判据的对照训练：静音副本</h3>
+          <p>消融还暴露了一个问题：静音输入下模型仍会在声音字段写出叫声（猫 12/64、狗 13/34），它是根据画面“猜”的。处理方式是在训练集追加约一成静音副本（画面不变、音轨换静音、声音字段标“无声”），并配一个条数、步数、顺序都相同的<strong>原样副本对照臂</strong>，把“副本内容”的作用和“多训了一成数据”分开。判定标准在构建数据之前写入记录。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>旧模型 / 对照臂 / 实验臂</th><th class="num">猫</th><th class="num">狗</th></tr></thead>
+              <tbody>
+                <tr><td>静音下报出行为声音（条）</td><td class="num">12 / 23 / <strong>1</strong></td><td class="num">13 / 15 / <strong>1</strong></td></tr>
+                <tr><td>正常音轨主类别正确（条）</td><td class="num">34 / 36 / 38</td><td class="num">21 / 19 / 21</td></tr>
+                <tr><td>按事先标准判定</td><td class="num">全部满足，采用</td><td class="num">一项未满足，不采用</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">对照臂猫侧反而从 12 条升到 23 条，说明只和旧模型比会低估副本的作用；狗侧 34 条评测分不清是代价还是波动，仍按规则记为未通过。</p>
+        </section>
+
+        <section id="agent">
+          <h2><span class="num">05</span>意图 Agent 设计</h2>
+          <h3>为什么用 Agent，不用固定流程</h3>
+          <p>不同问题需要的证据不一样：“它想干嘛”要三层六轴都看，“它平时这个点在干嘛”只需要第三层，“踩奶是什么意思”根本不用查六轴。让模型按问题和已有证据决定查什么、查到哪一步停下，才能应对连续追问。固定流程保留下来作为评测对照组。</p>
+          <h3>三层时序证据</h3>
+          <ul>
+            <li><strong>拍摄时刻</strong>（±3 秒）：此刻在做什么。</li>
+            <li><strong>拍摄前后</strong>（前 30 分钟至后 10 分钟）：刚才做了什么。</li>
+            <li><strong>近 7 天同一时段</strong>：平时这个时段通常做什么。</li>
+          </ul>
+          <p>对一只未参与训练的猫的连续佩戴数据离线推理 86,751 个窗口。逐窗合并相同类别得到 17,273 段、平均 7.5 秒，太碎没法用；复用线上的行为稳定状态机后为 <strong>3,576 段</strong>，与 App 显示同一口径。每条证据带编号，供回答引用和代码核对。</p>
+          <h3>假设—验证式决策</h3>
+          <div class="flow">
+            <div class="node"><b>取证</b><span>视频分析 + 三层六轴查询</span></div>
+            <div class="arrow">→</div>
+            <div class="node key"><b>提出候选</b><span>2–3 个意图，各附可验证迹象</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>定向验证</b><span>每次补查须对应已提候选</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>冲突处理</b><span>查相邻段 / 置信度 → 追问</span></div>
+            <div class="arrow">→</div>
+            <div class="node"><b>结构化提交</b><span>意图 + 逐候选判定 + 证据编号</span></div>
+          </div>
+          <p>解读流程共 13 个工具，查询时间范围由代码写死，模型只选工具和给参数。<code>propose_candidates</code> 不查任何数据，作用是把“想一想有哪些可能”这个原本看不见的步骤变成程序可以记录和检查的内容。两路冲突时先排查（相邻行为段、六轴置信度与少样本标注），仍无法判断再调用 <code>ask_owner</code> 问一个能区分两种说法的具体问题，本轮不下结论。</p>
+          <h3>多 Agent：按问题类型拆，不按数据来源拆</h3>
+          <p>路由 Agent 只有一个工具，把问题分给解读、知识问答、记忆复查三个子 Agent；后两个只持有各自的检索工具。没有按“视频 / 六轴”拆，因为解读的核心动作就是把两路证据放在同一上下文里对照，按模态拆反而要再加汇总层，证据编号、置信度这些细节会在转述中丢失。</p>
+          <div class="kpis">
+            <div class="stat"><b>11,882 → 2,050</b><span>知识类问题的输入 token</span></div>
+            <div class="stat"><b>0</b><span>知识子 Agent 读取六轴记录的可能（工具清单限定）</span></div>
+            <div class="stat"><b>13 → 1</b><span>局部事实查询的工具调用（固定流程 → Agent）</span></div>
+            <div class="stat"><b>116 vs 113</b><span>117 轮中多 Agent / 单 Agent 符合预期</span></div>
+          </div>
+        </section>
+
+        <section id="harness">
+          <h2><span class="num">06</span>Harness 与服务化</h2>
+          <h3>代码级校验：提示词让模型大概率照做，代码保证不照做就过不去</h3>
+          <ul>
+            <li><strong>工具调用前</strong>：校验参数、数据归属与调用顺序；用户和可查的宠物由会话决定，模型填什么都越不过这个范围。不通过就不执行，把原因作为工具结果返回让模型改正。</li>
+            <li><strong>提交回答前</strong>：证据编号必须是本轮工具真实返回过的（正文顺带提到的也算）；证据不能放错层（“近 7 天”不能冒充“此刻”）；给出意图必须三层齐全、每个候选都有判定；声称“两路都支持”时，引用的拍摄时刻行为必须真的对应该意图。</li>
+            <li><strong>降级</strong>：不合规退回修改一次，再违规由代码把意图改成“不作判断”。只给一次机会，是为了控制耗时和费用，也避免模型反复尝试到碰巧通过。</li>
+          </ul>
+          <p>这些规则不是一开始设计好的，而是从真实失败里一条条补出来的，每条规则旁边记着对应案例，并补进回归测试。例如模型把长编号缩写了导致对不上记录，于是加了“正文里的编号也要逐字核对”。</p>
+          <h3>人在回路：追问后怎么暂停和继续</h3>
+          <p>调用 <code>ask_owner</code> 后，主人可能几分钟后回，也可能第二天才回。基于 LangGraph 的 <code>interrupt</code> 和 SQLite checkpoint：追问时保存完整状态并结束本轮；主人回复时带会话编号恢复，哪怕进程已经重启，之前的证据和候选都还在。恢复后先重新路由，判断这句话是在回答原问题，还是转而问了新问题；新问题先回答，原来的冲突保留，之后可以接着处理。恢复时节点会重新执行，所以挂起前的路径不做写入。</p>
+          <h3>完成契约</h3>
+          <p>程序正常返回不等于问题解决了。每轮必须声明“已作答 / 等待补充 / 受阻”，并由代码核对声明与实际执行一致：声明等待补充就必须真的调用过 <code>ask_owner</code>，反之亦然。这条规则针对一个真实问题：模型在正文里问了“它当时是在睡觉还是在玩？”却没调用追问工具，流程没有暂停，主人的回复被当成新问题处理。</p>
+          <h3>异步服务</h3>
+          <ul>
+            <li>提交与执行分离：主管进程接收请求与监督，执行子进程运行 Agent；串行队列最多 32 项，同一会话拒绝并发请求，重复提交复用原任务。</li>
+            <li>进度来自状态图节点的真实开始与结束事件，经 SSE 推送并持久化事件编号，断线后从上次位置续传。</li>
+            <li>取消或超过 660 秒硬截止时由主管进程直接终止执行进程；主管异常退出时执行进程自行退出，重启后任务标记为已中断、可重试；业务写入与 checkpoint 之间的崩溃以请求编号去重。</li>
+            <li>除模型回复用脚本代替外，状态图、数据库、HTTP 与进程都是真实组件，故意制造崩溃、强杀、数据库锁、断线等故障：<strong>59 项测试全部通过</strong>并接入 GitHub Actions。真实模型实测 20 个合成任务全部返回，端到端 P50 9.8 s。</li>
+          </ul>
+        </section>
+
+        <section id="eval">
+          <h2><span class="num">07</span>Agent 评测</h2>
+          <p>77 道题、117 轮对话，包含真实配对视频、构造的规则场景和跨天记忆；三组对照（仅视频模型、固定流程、单 Agent）加五组消融（逐一关掉拍摄时刻、拍摄前后、近 7 天证据、知识库、记忆）。意图是否正确和过程是否合规分开报。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>问题</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr><td>意图判断对不对</td><td>9 段真配对测试视频上，Agent 与仅用视频模型都答对 4 段（44%）；仅用视频模型的 5 次错误断言，Agent 全部转为追问或暂不判断。关掉拍摄时刻证据后，这 5 段全部变回错答。</td></tr>
+                <tr><td>过程是否合规</td><td>多 Agent 116/117 轮符合预期（单 Agent 113/117）；写入正确 91/91；引用证据 100% 可核对；跨用户读取 0 次；路由场景 10/10。</td></tr>
+                <tr><td>比简单做法好在哪</td><td>6 道需要按问题选证据的题上，固定流程完成 2 道，Agent 完成 6 道；12 个完整多轮任务上三者接近（8 / 7 / 8），多 Agent 费用高约 4%。</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout"><b>结论如实写：</b>Agent 没有提高意图准确率，它的作用是不再给出错误断言；多 Agent 对准确率也没有提升，收益在上下文变小和权限更清楚。</div>
+          <h3>怎么保证评测可信</h3>
+          <ul>
+            <li>主人的意图标注在看到任何模型输出之前完成。</li>
+            <li>17 段真配对视频中，有 6 段曾被用来发现问题、修改规则，这 6 段转入开发集不计成绩，最终成绩只看没被用来改过规则的 9 段测试视频。</li>
+            <li>超时、拒答、预算耗尽都算未完成，费用统计包含失败的尝试。</li>
+          </ul>
+        </section>
+
+        <section id="ext">
+          <h2><span class="num">08</span>扩展模块：用对照实验决定是否采用</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>模块</th><th>结果</th><th>决定</th></tr></thead>
+              <tbody>
+                <tr><td>混合检索<br><span class="table-note">BGE-M3 + Milvus，BM25 / 向量 / RRF / 重排四路</span></td><td>6 道定位题上 MRR 0.625 → 0.741；Cross-Encoder 重排无进一步收益，CPU 上单次约 16 s</td><td>样本不足以支撑换默认，BM25 仍为默认，其余为可选</td></tr>
+                <tr><td>上下文压缩<br><span class="table-note">轮次边界抽取式摘要，原文归档可取回</span></td><td>输入 token −59.3%，但提示词缓存命中率 95.7% → 70.1%，估算费用 +47.6%</td><td>保持可选，不作为降本手段；长间隔对话场景未测</td></tr>
+                <tr><td>按需加载流程说明（Skill）</td><td>固定提示词 3,443 → 2,422 token；117 轮对照 114 vs 116，模型调用 611 → 531 次</td><td>未见退步，但单次对照不足以说明提升</td></tr>
+                <tr><td>MCP 工具协议</td><td>10 个取证与记录类工具放入独立 MCP 服务端（stdio），身份与数据归属在服务端校验；主人陈述写入须主人确认</td><td>定位为单用户本地服务</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="limits">
+          <h2><span class="num">09</span>边界与遗留</h2>
+          <ul>
+            <li>视频类别体系里没有“进食饮水”和“自我护理”，接入 Agent 后在真实视频上累计出现 8 次；类别与依据矛盾时，Agent 侧规定以依据里描述的动作为准，这批样本也作为补充类别定义的线索。</li>
+            <li>评测规模小：音视频评测猫 64 条、狗 34 条，Agent 测试视频 9 段，结论只代表这批样本；静音副本实验每臂单次训练。</li>
+            <li>INT8 端侧推理包使用公开犬类数据的联调模型，真实数据模型目前用于服务端。</li>
+          </ul>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>魏楚琪 · <a href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a></span>
+      <a href="finagent.html">下一个项目：研报发布前质控预审 Agent →</a>
+    </div>
+  </footer>
+  <script src="assets/site.js"></script>
+</body>
+</html>

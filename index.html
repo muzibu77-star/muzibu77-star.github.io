@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>魏楚琪 · 大模型 / Agent 工程师</title>
+  <meta name="description" content="魏楚琪的项目主页：宠物多模态理解与意图 Agent、研报发布前质控预审 Agent。">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">魏楚琪</a>
+      <nav class="nav">
+        <a href="#projects">项目</a>
+        <a href="#approach">做事方式</a>
+        <a href="mailto:muzibu77@gmail.com">联系</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow">LLM · MULTIMODAL · AGENT</p>
+      <h1>魏楚琪<span class="role">大模型 / Agent 工程师</span></h1>
+      <p class="lead">做多模态大模型训练与 Agent 系统工程：从数据构建、模型微调，到多 Agent 编排、服务化与评测。习惯先写定判据，再用固定评测集、消融实验和统计检验做技术决策。</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#projects">看项目演示</a>
+        <a class="btn" href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a>
+      </div>
+      <ul class="facts">
+        <li>深圳 · 在职大模型工程师</li>
+        <li>Qwen2.5-Omni · Qwen3.5 · LangGraph · FSDP / LoRA</li>
+      </ul>
+    </section>
+
+    <section class="section" id="projects">
+      <div class="section-head">
+        <h2>项目</h2>
+        <p>视频为真实系统录屏，无声</p>
+      </div>
+
+      <article class="project">
+        <div class="project-media">
+          <video controls preload="none" playsinline poster="assets/img/pet-poster.jpg">
+            <source src="assets/video/pet-demo.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="project-body">
+          <p class="project-meta">深圳市宠智联科技有限公司 · 2026.05 – 至今</p>
+          <h3>宠物多模态理解与意图 Agent</h3>
+          <p class="summary">项圈六轴持续记录宠物的日常行为，音视频模型读懂一段视频里的情绪与状态，意图 Agent 把两路证据放在一起对照：一致就作答，冲突就先追问主人，再结合回答重新判断。</p>
+          <div class="stats">
+            <div class="stat"><b>+15.6 / +41.2</b><span>猫 / 狗分类准确率较基座提升（百分点）</span></div>
+            <div class="stat"><b>21.6 KB</b><span>INT8 端侧模型，量化前后输出一致</span></div>
+            <div class="stat"><b>116 / 117</b><span>多轮评测中 Agent 行为符合预期的轮数</span></div>
+            <div class="stat"><b>59 项</b><span>故障注入回归测试全部通过</span></div>
+          </div>
+          <ul class="chips">
+            <li>Qwen2.5-Omni-7B</li><li>领域 LoRA</li><li>音轨消融 / McNemar</li><li>IMU 自监督预训练</li><li>QAT / INT8</li><li>LangGraph</li><li>人在回路</li>
+          </ul>
+          <a class="more" href="pet.html">技术细节 →</a>
+        </div>
+      </article>
+
+      <article class="project">
+        <div class="project-media">
+          <video controls preload="none" playsinline poster="assets/img/finagent-poster.jpg">
+            <source src="assets/video/finagent-demo.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="project-body">
+          <p class="project-meta">2026.03 – 2026.10 · 演示稿件为比亚迪 2024 年年报点评</p>
+          <h3>研报发布前质控预审 Agent</h3>
+          <p class="summary">把研报里的每个数字对回原始披露文件：模型只负责抽取，结论由确定性代码对回字符级出处库给出，复查 Agent 只能新增告警，查不到依据的数字交给人工。</p>
+          <div class="stats">
+            <div class="stat"><b>53.7 万条</b><span>可溯源到 PDF 字符位置的年报事实</span></div>
+            <div class="stat"><b>95.3%</b><span>封存测试集上的错误召回率</span></div>
+            <div class="stat"><b>0</b><span>实质性错误漏检（直接审稿漏检 111 处）</span></div>
+            <div class="stat"><b>46 → 7</b><span>本地 9B 抽取模型训练后开发集误报</span></div>
+          </div>
+          <ul class="chips">
+            <li>MinerU + PDF 文本层对齐</li><li>时点控制</li><li>Qwen3.5-9B</li><li>FSDP + LoRA</li><li>多 Agent 编排</li><li>封存验收</li>
+          </ul>
+          <a class="more" href="finagent.html">技术细节 →</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="approach">
+      <div class="section-head"><h2>做事方式</h2></div>
+      <div class="principles">
+        <div class="principle">
+          <h3>先写判据，再跑实验</h3>
+          <p>采用门槛和判定标准在训练、验收之前写进记录；测试集封存到最后只用一次，结果出来后不再调参。</p>
+        </div>
+        <div class="principle">
+          <h3>每个结论配一个对照</h3>
+          <p>LoRA 对比原厂基座、多 Agent 对比单 Agent 与固定流程、静音副本配原样副本对照臂，只改一个变量，小样本配配对检验。</p>
+        </div>
+        <div class="principle">
+          <h3>规则落成代码</h3>
+          <p>提示词只能让模型大概率照做；证据编号、引用层级、完成状态这类可判定的规则，都由代码在执行前后强制检查。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>魏楚琪 · <a href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a></span>
+      <span>更新于 2026.10</span>
+    </div>
+  </footer>
+</body>
+</html>
