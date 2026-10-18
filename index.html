@@ -3,73 +3,297 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>魏楚琪 · 项目演示</title>
-  <meta name="description" content="魏楚琪的两个 AI 项目演示：宠物意图理解 Agent、研报数字核查 Agent。">
+  <title>魏楚琪 · 大模型 / Agent 工程师</title>
+  <meta name="description" content="魏楚琪的个人主页：多模态大模型与 Agent 系统工程师，项目演示、技能与工作经历。">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./">魏楚琪</a>
+      <a class="brand" href="#top">魏楚琪</a>
       <nav class="nav">
-        <a href="pet.html">宠物 Agent</a>
-        <a href="finagent.html">研报核查 Agent</a>
-        <a href="mailto:muzibu77@gmail.com">联系</a>
+        <a class="hide-sm" href="#about">关于我</a>
+        <a class="hide-sm" href="#skills">技能</a>
+        <a href="#projects">项目</a>
+        <a href="#experience">经历</a>
+        <a href="#contact">联系</a>
       </nav>
     </div>
   </header>
 
+  <!-- ① 首屏 -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div>
+        <p class="hero-kicker">大模型 / Agent 工程师</p>
+        <h1>魏楚琪</h1>
+        <p class="tagline">我做多模态大模型和 Agent 系统，从模型微调一直做到产品上线。</p>
+        <ul class="facts">
+          <li>深圳 · 在职</li>
+          <li>意向城市不限</li>
+        </ul>
+        <div class="hero-actions">
+          <a class="btn primary" href="#projects">看项目演示</a>
+          <a class="btn" href="#contact">联系我</a>
+        </div>
+      </div>
+      <!-- 头像：把照片存为 assets/img/avatar.jpg 即自动显示；没有照片时显示“魏”字 -->
+      <div class="avatar" aria-label="魏楚琪的头像">
+        <span>魏</span>
+        <img src="assets/img/avatar.jpg" alt="魏楚琪" onerror="this.remove()">
+      </div>
+    </div>
+  </section>
+
   <main class="wrap">
-    <section class="hero slim">
-      <h1>魏楚琪<span class="role">大模型 / Agent 工程师</span></h1>
-      <p class="lead">这里放了我做的两个项目，视频都是系统的真实录屏。点进项目可以看它是怎么工作的。</p>
+    <!-- ② 关于我 -->
+    <section class="section" id="about">
+      <div class="section-head">
+        <p class="eyebrow">ABOUT</p>
+        <h2>关于我</h2>
+      </div>
+      <div class="about">
+        <div class="about-text">
+          <p>我是魏楚琪，现在在深圳一家宠物智能硬件公司做大模型工程师。我负责的是一整条线：项圈上的行为识别模型、读懂宠物视频的音视频大模型，以及把两者结合起来、回答主人“它这是想干嘛”的 Agent。</p>
+          <p>我本科读的是高分子材料，毕业后做了一年 AI 专利代理，每天拆解别人的深度学习和 Agent 方案。看得多了，就决定自己动手做，之后转到了大模型工程。</p>
+          <p>我比较擅长的是把一个模型从数据、微调一路做到能用的服务，以及给 Agent 系统做工程化，让它能稳定上线。做每个改动时，我都会用对照实验确认它真的有用。</p>
+        </div>
+        <aside class="about-card">
+          <dl>
+            <dt>现职</dt><dd>大模型工程师 · 深圳市宠智联科技</dd>
+            <dt>方向</dt><dd>多模态大模型 · Agent 系统 · 后训练</dd>
+            <dt>学历</dt><dd>广东工业大学 · 工学学士</dd>
+            <dt>所在地</dt><dd>深圳（意向城市不限）</dd>
+            <dt>邮箱</dt><dd><a href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a></dd>
+          </dl>
+        </aside>
+      </div>
     </section>
 
-    <section class="section" style="padding-top: 8px">
+    <!-- ③ 技能栈 -->
+    <section class="section" id="skills">
+      <div class="section-head">
+        <p class="eyebrow">SKILLS</p>
+        <h2>技能栈</h2>
+      </div>
+      <div class="skills">
+        <div class="skill-group">
+          <h3>模型训练与后训练</h3>
+          <ul class="tags">
+            <li class="core">PyTorch</li><li class="core">LoRA 微调</li><li class="core">FSDP 多卡训练</li><li>Transformers</li><li>PEFT</li><li>TRL</li><li>LLaMA Factory</li><li>SFT</li><li>DPO</li><li>奖励模型</li><li>Best-of-N</li><li>vLLM</li>
+          </ul>
+        </div>
+        <div class="skill-group">
+          <h3>多模态</h3>
+          <ul class="tags">
+            <li class="core">Qwen2.5-Omni</li><li class="core">音视频理解</li><li>Qwen3.5</li><li>CLAP</li><li>TMRoPE 时间对齐</li><li>IMU 时序建模</li><li>自监督预训练</li><li>QAT / INT8 量化</li><li>TFLite Micro</li>
+          </ul>
+        </div>
+        <div class="skill-group">
+          <h3>Agent 与检索</h3>
+          <ul class="tags">
+            <li class="core">LangGraph</li><li class="core">多 Agent 编排</li><li>工具调用</li><li>人在回路</li><li>Checkpoint 恢复</li><li>MCP</li><li>BM25</li><li>Milvus</li><li>BGE-M3</li><li>RRF 混合检索</li><li>上下文压缩</li>
+          </ul>
+        </div>
+        <div class="skill-group">
+          <h3>工程与评测</h3>
+          <ul class="tags">
+            <li class="core">Python</li><li class="core">FastAPI</li><li>SSE</li><li>MQTT</li><li>Redis</li><li>PostgreSQL</li><li>SQLite</li><li>Docker</li><li>GitHub Actions</li><li>MinerU</li><li>消融实验</li><li>Bootstrap / McNemar</li><li>故障注入测试</li>
+          </ul>
+        </div>
+      </div>
+      <p class="skills-note">蓝色为日常主力使用。</p>
+    </section>
+
+    <!-- ④ 项目经历 -->
+    <section class="section" id="projects">
+      <div class="section-head">
+        <p class="eyebrow">PROJECTS</p>
+        <h2>项目经历</h2>
+      </div>
+
       <article class="project">
-        <div class="project-media">
-          <video id="v-pet" controls preload="none" playsinline poster="assets/img/pet-poster.jpg">
+        <div class="project-video">
+          <video id="v-pet" controls preload="metadata" playsinline poster="assets/img/pet-poster.jpg">
             <source src="assets/video/pet-demo.mp4" type="video/mp4">
           </video>
         </div>
         <div class="project-body">
-          <h3>宠物意图理解 Agent</h3>
-          <p class="summary">主人拍一段宠物视频，问“它这是想干嘛”。系统先看视频，再翻这只宠物项圈记下的行为记录，两边对得上就回答，对不上就先问主人一句，再重新判断。</p>
+          <div class="project-head">
+            <h3>宠物意图理解 Agent</h3>
+            <span class="when">深圳市宠智联科技 · 2026.05 – 至今</span>
+          </div>
+          <p class="project-sub">结合宠物视频和项圈行为记录，回答主人“它这是想干嘛”。</p>
           <ul class="chapters" data-chapters="v-pet">
-            <li><button data-t="0"><time>0:00</time>案例 1 · 两边一致</button></li>
+            <li><button data-t="0"><time>0:00</time>案例 1 · 视频和项圈记录一致</button></li>
             <li><button data-t="17"><time>0:17</time>案例 2 · 两边冲突，先追问</button></li>
             <li><button data-t="49"><time>0:49</time>系统结构</button></li>
           </ul>
-          <a class="more" href="pet.html">它是怎么工作的 →</a>
+          <dl class="star">
+            <dt>背景<small>SITUATION</small></dt>
+            <dd>主人常看不懂宠物想要什么，而且同一个动作在不同时间意思不同：早上蹲门口多半是要上厕所，下午可能只是想出去玩。只看一段十几秒的视频，看不到这些前因后果。</dd>
+            <dt>任务<small>TASK</small></dt>
+            <dd>让 App 结合视频和这只宠物自己的项圈记录判断意图；两边证据对不上时，不能随便给答案。</dd>
+            <dt>行动<small>ACTION</small></dt>
+            <dd>
+              <ul>
+                <li>微调 Qwen2.5-Omni-7B 做音视频理解，联合训犬师、猫行为分析师复核标注数据。</li>
+                <li>做项圈六轴行为识别：自监督预训练提升识别效果，量化感知训练后端侧模型仅 21.6 KB；实时识别服务经 MQTT 接入项圈与 App。</li>
+                <li>用 LangGraph 搭多 Agent 系统：按“拍摄那一刻 / 前后半小时 / 近 7 天”查行为记录，先提候选意图再逐个查证，冲突时向主人追问，对话可跨进程恢复。</li>
+                <li>证据引用和结论由代码强制校验，用 59 项故障注入测试保证服务稳定。</li>
+              </ul>
+            </dd>
+            <dt>结果<small>RESULT</small></dt>
+            <dd>
+              <div class="results">
+                <div class="result"><b>+15.6 / +41.2</b><span>猫 / 狗分类准确率较原厂模型提升（百分点）</span></div>
+                <div class="result"><b>全部</b><span>视频模型单独判错的测试案例，都改为先追问</span></div>
+                <div class="result"><b>12 → 1</b><span>静音下仍“听到”叫声的猫视频（64 条中）</span></div>
+                <div class="result"><b>116 / 117</b><span>多轮测试中 Agent 行为符合预期的轮数</span></div>
+              </div>
+            </dd>
+          </dl>
         </div>
       </article>
 
       <article class="project">
-        <div class="project-media">
-          <video id="v-fin" controls preload="none" playsinline poster="assets/img/finagent-poster.jpg">
+        <div class="project-video">
+          <video id="v-fin" controls preload="metadata" playsinline poster="assets/img/finagent-poster.jpg">
             <source src="assets/video/finagent-demo.mp4" type="video/mp4">
           </video>
         </div>
         <div class="project-body">
-          <h3>研报数字核查 Agent</h3>
-          <p class="summary">研报发出去之前，把里面的每个数字对回上市公司年报原文：哪里写错了、原文是多少、出处在第几页，点一下数字就能看到原件。演示用的是一篇比亚迪 2024 年年报点评。</p>
+          <div class="project-head">
+            <h3>研报数字核查 Agent</h3>
+            <span class="when">2026.03 – 2026.10</span>
+          </div>
+          <p class="project-sub">研报发出前，把每个数字对回上市公司年报原文。演示稿件为比亚迪 2024 年年报点评。</p>
           <ul class="chapters" data-chapters="v-fin">
             <li><button data-t="0"><time>0:00</time>提交稿件</button></li>
             <li><button data-t="9"><time>0:09</time>复查 Agent</button></li>
             <li><button data-t="15"><time>0:15</time>修订建议</button></li>
             <li><button data-t="24"><time>0:24</time>点数字看原件</button></li>
+            <li><button data-t="35"><time>0:35</time>系统结构</button></li>
           </ul>
-          <a class="more" href="finagent.html">它是怎么工作的 →</a>
+          <dl class="star">
+            <dt>背景<small>SITUATION</small></dt>
+            <dd>研报里的数字都要能对上年报原文，但质控人手有限、时效又紧。越来越多人用 AI 写稿，写得很流畅，数字却常常是错的：实测不给原文时，模型写的点评里 77%–84% 的数字有错。</dd>
+            <dt>任务<small>TASK</small></dt>
+            <dd>发稿前自动核查每个数字，给出原文值和出处页码，并且不能漏掉实质性错误。</dd>
+            <dt>行动<small>ACTION</small></dt>
+            <dd>
+              <ul>
+                <li>把 30 家上市公司 25,224 页年报解析成 53.7 万条事实，每个数字都定位到 PDF 原文位置；核对时只用写稿日之前已披露的文件。</li>
+                <li>不让大模型当裁判：模型只负责抽取数字，对错由代码查年报库判定；抽取模型是用 FSDP + LoRA 微调的本地 Qwen3.5-9B，稿件可不出本机。</li>
+                <li>用 LangGraph 编排抽取、核查、复查、修订四个 Agent；对比实验后规定复查 Agent 只能新增告警、不能放行。</li>
+                <li>做了人工核查页：点击稿件里的数字，直接打开年报原件并框出出处。</li>
+              </ul>
+            </dd>
+            <dt>结果<small>RESULT</small></dt>
+            <dd>
+              <div class="results">
+                <div class="result"><b>95.3%</b><span>封存测试集上的错误召回率</span></div>
+                <div class="result"><b>0 vs 111</b><span>实质性错误漏检（本系统 vs 大模型直接审稿）</span></div>
+                <div class="result"><b>2.95%</b><span>误报率</span></div>
+                <div class="result"><b>46 → 7</b><span>微调后本地抽取模型的误报</span></div>
+              </div>
+            </dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="project compact">
+        <div class="project-body">
+          <div class="project-head">
+            <h3>GSM8K 数学推理后训练</h3>
+            <span class="when">2026.01</span>
+          </div>
+          <dl class="star">
+            <dt>背景<small>SITUATION</small></dt>
+            <dd>想系统走一遍大模型后训练的完整流程，并分清“训练带来的提升”和“推理时多采样、重排序带来的提升”各有多少。</dd>
+            <dt>任务<small>TASK</small></dt>
+            <dd>在 Qwen3-4B 上完成 SFT → DPO → 奖励模型 → Best-of-5 重排，并在完整测试集上分阶段评测。</dd>
+            <dt>行动<small>ACTION</small></dt>
+            <dd>用模型自己答错的题构造 762 对偏好数据做 DPO；训练 value-head 奖励模型，给 5 个候选答案打分选最优；所有阶段用同一套提示和解码设置评测。</dd>
+            <dt>结果<small>RESULT</small></dt>
+            <dd>
+              <div class="results">
+                <div class="result"><b>78.62%</b><span>基座模型</span></div>
+                <div class="result"><b>82.64%</b><span>SFT + DPO 后</span></div>
+                <div class="result"><b>87.04%</b><span>加奖励模型重排后</span></div>
+                <div class="result"><b>1,319 题</b><span>GSM8K 完整测试集</span></div>
+              </div>
+            </dd>
+          </dl>
         </div>
       </article>
     </section>
+
+    <!-- ⑤ 工作经历 -->
+    <section class="section" id="experience">
+      <div class="section-head">
+        <p class="eyebrow">EXPERIENCE</p>
+        <h2>工作经历</h2>
+      </div>
+      <ol class="timeline">
+        <li>
+          <div class="tl-when">2026.05 – 至今</div>
+          <h3 class="tl-title">深圳市宠智联科技有限公司 <span>· 大模型工程师</span></h3>
+          <ul>
+            <li>独立负责宠物音视频理解模型，从数据构建、领域微调到推理服务；猫 / 狗分类准确率较原厂模型分别提升 15.6、41.2 个百分点。</li>
+            <li>负责项圈六轴行为识别的模型与交付，2026.08 接入项圈与 App；交付 21.6 KB 的 INT8 端侧推理包和 MQTT 实时识别服务。</li>
+            <li>设计意图理解 Agent，把视频判断和项圈记录结合起来，证据冲突时主动追问主人。</li>
+          </ul>
+        </li>
+        <li>
+          <div class="tl-when">2025.04 – 2026.05</div>
+          <h3 class="tl-title">北京市润平知识产权代理有限公司 <span>· AI 专利代理师</span></h3>
+          <ul>
+            <li>分析 AI 源代码与技术文献，把深度学习、Agent、多模态方案拆解为技术问题、实现机制与创新点，撰写专利申请材料。</li>
+          </ul>
+        </li>
+        <li class="edu">
+          <div class="tl-when">2020.09 – 2024.06</div>
+          <h3 class="tl-title">广东工业大学 <span>· 高分子材料工程（创新班）· 工学学士</span></h3>
+          <ul>
+            <li>学业奖学金 3 次；高等数学 I / II：91 / 89。</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
   </main>
 
-  <footer class="site-footer">
+  <!-- ⑥ 联系方式 -->
+  <footer class="contact" id="contact">
     <div class="wrap">
-      <span>魏楚琪 · <a href="mailto:muzibu77@gmail.com">muzibu77@gmail.com</a></span>
+      <h2>联系我</h2>
+      <p>欢迎来信聊项目细节或岗位机会。</p>
+      <ul class="contact-links">
+        <li>
+          <a href="mailto:muzibu77@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            muzibu77@gmail.com
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/muzibu77-star" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+            github.com/muzibu77-star
+          </a>
+        </li>
+        <!-- LinkedIn：有主页后取消注释并替换链接
+        <li>
+          <a href="https://www.linkedin.com/in/你的ID" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg>
+            LinkedIn
+          </a>
+        </li>
+        -->
+      </ul>
+      <p class="copyright">© 2026 魏楚琪</p>
     </div>
   </footer>
+
   <script src="assets/site.js"></script>
 </body>
 </html>
