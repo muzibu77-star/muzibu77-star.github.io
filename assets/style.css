@@ -109,6 +109,10 @@ strong { font-weight: 650; color: var(--text); }
 .tags li { padding: 3px 11px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); font-size: 13.5px; }
 .tags li.core { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .skills-note { margin: 14px 0 0; color: var(--muted); font-size: 13.5px; }
+.skill-list { display: grid; grid-template-columns: 112px minmax(0, 1fr); margin: 0; border-top: 1px solid var(--line); font-size: 15.5px; }
+.skill-list dt, .skill-list dd { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.skill-list dt { color: var(--text); font-weight: 650; }
+.skill-list dd { margin: 0; color: var(--text-2); }
 
 /* ④ 项目经历 */
 .project { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 32px; }
@@ -175,6 +179,9 @@ strong { font-weight: 650; color: var(--text); }
   .avatar span { font-size: 46px; }
   .section { padding-top: 56px; }
   .project-body { padding: 20px 18px 22px; }
+  .skill-list { grid-template-columns: minmax(0, 1fr); }
+  .skill-list dt { padding-bottom: 0; border-bottom: 0; }
+  .skill-list dd { padding-top: 2px; }
   .star { grid-template-columns: minmax(0, 1fr); }
   .star dt { padding-bottom: 2px; border-bottom: 0; }
   .star dd { padding-top: 4px; }
