@@ -74,7 +74,8 @@ strong { font-weight: 650; color: var(--text); }
 @keyframes blink { 50% { opacity: 0; } }
 .core-facts { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 
-.planets { position: absolute; inset: 0; z-index: 3; }
+.planets { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.planet { pointer-events: auto; }
 .planet { --a: calc(-135deg + var(--i) * 90deg + var(--spin)); position: absolute; left: 50%; top: 50%; width: var(--P); height: var(--P); margin: calc(var(--P) / -2) 0 0 calc(var(--P) / -2); display: grid; justify-items: center; align-content: center; gap: 6px; text-align: center; color: var(--text); transform: rotate(var(--a)) translate(var(--R)) rotate(calc(-1 * var(--a))); transition: transform .3s ease; animation: fly-out .9s cubic-bezier(.2, .8, .2, 1) both, bob 4.5s ease-in-out infinite; animation-delay: calc(.3s + var(--i) * .1s), calc(var(--i) * -.9s); }
 .globe { position: relative; width: 64px; height: 64px; border-radius: 50%; background: var(--globe); box-shadow: inset -9px -8px 16px rgba(0, 0, 0, .55), 0 0 22px var(--glow); transition: box-shadow .3s; }
 .globe::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 72% 72%, transparent 38%, rgba(0, 0, 0, .5) 78%); }
@@ -112,6 +113,22 @@ strong { font-weight: 650; color: var(--text); }
 @keyframes rise { from { opacity: 0; transform: translate(-50%, calc(-50% + 14px)); } }
 @keyframes fade { from { opacity: 0; } }
 @keyframes fly-out { from { opacity: 0; transform: rotate(var(--a)) translate(0) rotate(calc(-1 * var(--a))) scale(.4); } }
+
+/* 彩蛋：AI 图标对话气泡、小跳；头像超新星 */
+.sprite { cursor: pointer; }
+.sprite:has(.bubble)::after { opacity: 0 !important; }
+.bubble { position: absolute; left: 50%; bottom: calc(100% + 14px); translate: -50% 0; z-index: 5; max-width: 220px; width: max-content; padding: 7px 12px; border: 1px solid rgba(79, 209, 255, .45); border-radius: 12px; background: rgba(8, 14, 32, .92); color: var(--text); font-size: 13px; line-height: 1.5; box-shadow: 0 8px 24px rgba(0, 0, 0, .45), 0 0 18px rgba(79, 209, 255, .2); animation: pop .3s cubic-bezier(.2, 1.4, .4, 1) both; pointer-events: none; }
+.bubble::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% -5px; width: 10px; height: 10px; rotate: 45deg; background: inherit; border-right: 1px solid rgba(79, 209, 255, .45); border-bottom: 1px solid rgba(79, 209, 255, .45); }
+@keyframes pop { from { opacity: 0; scale: .6; } }
+.sprite.jump { animation: jump .5s cubic-bezier(.3, 1.6, .5, 1), twinkle 3.6s ease-in-out infinite; }
+@keyframes jump { 40% { translate: -50% calc(-50% - 22px); } }
+.avatar-wrap { cursor: pointer; }
+.avatar-wrap.poke { animation: poke .25s ease; }
+@keyframes poke { 50% { scale: .95; } }
+.shockwave { position: absolute; left: 50%; top: 96px; width: 120px; height: 120px; translate: -50% -50%; z-index: -1; border-radius: 50%; border: 3px solid rgba(255, 220, 160, .9); box-shadow: 0 0 30px rgba(255, 200, 120, .8), inset 0 0 30px rgba(79, 209, 255, .6); pointer-events: none; animation: shock 1.6s ease-out both; }
+@keyframes shock { from { scale: .3; opacity: 1; } to { scale: 9; opacity: 0; } }
+.core.supernova .corona { animation: nova 1.6s ease-out; }
+@keyframes nova { 20% { scale: 2.6; opacity: 1; background: radial-gradient(circle, rgba(255, 245, 220, .9), rgba(255, 170, 90, .35) 35%, transparent 65%); } }
 
 /* ② 详情页 */
 .detail { display: none; min-height: 100vh; overflow-x: clip; }

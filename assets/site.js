@@ -120,7 +120,7 @@ const projects = (() => {
   const canvas = document.querySelector('.space');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, stars = [], meteors = [], t = 0;
+  let W = 0, H = 0, stars = [], meteors = [], t = 0, shower = 0;
   const mouse = { x: -1e4, y: -1e4, px: 0, py: 0 };
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -163,7 +163,8 @@ const projects = (() => {
       }
     }
     // 流星
-    if (Math.random() < .006 && meteors.length < 2) {
+    if (shower > 0) shower -= 1;
+    if (shower > 0 ? Math.random() < .35 && meteors.length < 24 : Math.random() < .006 && meteors.length < 2) {
       meteors.push({ x: Math.random() * W * .8 + W * .2, y: Math.random() * H * .4, vx: -(6 + Math.random() * 4), vy: 3 + Math.random() * 2, life: 1 });
     }
     meteors = meteors.filter((m) => m.life > 0);
@@ -179,6 +180,7 @@ const projects = (() => {
   const loop = () => { if (!document.hidden) draw(); requestAnimationFrame(loop); };
   resize();
   window.addEventListener('resize', resize);
+  document.addEventListener('meteor-shower', () => { shower = 240; });
   window.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') { mouse.x = e.clientX; mouse.y = e.clientY; } });
   document.addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; });
   if (reduceMotion) draw(); else requestAnimationFrame(loop);
@@ -253,3 +255,66 @@ const projects = (() => {
     setTimeout(tick, 2200);
   }
 })();
+
+// 彩蛋 1：点击 AI 图标会说话，小螃蟹还会跳一下
+(() => {
+  const LINES = {
+    Claude: ['这个网站我也有参与哦', '她改需求的速度比我写代码还快', '点行星看看她的项目吧'],
+    ChatGPT: ['Let’s think step by step.', '我是 GPT，老朋友了', '她的简历我也帮忙看过'],
+    Gemini: ['一闪一闪亮晶晶 ✦', '多模态？那是我的老本行', '看看她的音视频模型吧'],
+    DeepSeek: ['嗨～我在深海里读年报', '她的研报核查 Agent 也调用过我', '53.7 万条事实，数得我眼花'],
+  };
+  document.querySelectorAll('.sprite').forEach((el) => {
+    const lines = LINES[el.dataset.name] || [];
+    let i = 0, timer = null;
+    el.addEventListener('click', () => {
+      if (!lines.length) return;
+      el.querySelector('.bubble')?.remove();
+      const b = document.createElement('span');
+      b.className = 'bubble';
+      b.textContent = lines[i % lines.length];
+      i += 1;
+      el.appendChild(b);
+      el.classList.remove('jump');
+      void el.offsetWidth;
+      el.classList.add('jump');
+      clearTimeout(timer);
+      timer = setTimeout(() => b.remove(), 2800);
+    });
+  });
+})();
+
+// 彩蛋 2：连续点击头像 5 次，恒星爆发超新星并引发流星雨
+(() => {
+  const core = document.querySelector('.core');
+  const avatar = document.querySelector('.avatar-wrap');
+  if (!core || !avatar) return;
+  let clicks = 0, reset = null;
+  avatar.addEventListener('click', () => {
+    clicks += 1;
+    clearTimeout(reset);
+    reset = setTimeout(() => { clicks = 0; }, 1500);
+    avatar.classList.remove('poke');
+    void avatar.offsetWidth;
+    avatar.classList.add('poke');
+    if (clicks < 5) return;
+    clicks = 0;
+    for (let k = 0; k < 3; k++) {
+      const w = document.createElement('i');
+      w.className = 'shockwave';
+      w.style.animationDelay = `${k * .18}s`;
+      core.appendChild(w);
+      setTimeout(() => w.remove(), 2200);
+    }
+    core.classList.add('supernova');
+    setTimeout(() => core.classList.remove('supernova'), 1600);
+    document.dispatchEvent(new Event('meteor-shower'));
+  });
+})();
+
+// 彩蛋 3：控制台留言
+console.log(
+  '%c\n      .  *   ✦        .     *\n   *    ___________       .\n      /  魏楚琪的星系  \   ✦\n  .  ( ======O====== )      *\n      \_____________/  .\n   ✦        .      *       .\n',
+  'color:#4fd1ff;font-family:monospace;font-size:12px'
+);
+console.log('%c你在看源码？那我们应该聊聊 → muzibu77@gmail.com', 'color:#eaf1ff;background:#0b1226;padding:6px 10px;border-radius:6px;border:1px solid #4fd1ff;font-size:13px');
