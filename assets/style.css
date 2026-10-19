@@ -16,7 +16,10 @@
   --font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
   --mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
   color-scheme: dark;
+  --k: 1;
 }
+/* 大屏按窗口尺寸整体放大，--k 由 site.js 计算；屏幕相关单位已在各处除以 --k 抵消 */
+.hub, .detail, .dock { zoom: var(--k); }
 
 /* 行星外观：首页行星与页内圆点共用 */
 .p-earth { --globe: radial-gradient(circle at 62% 38%, rgba(120, 200, 120, .9) 0 9%, transparent 10%), radial-gradient(circle at 34% 64%, rgba(100, 180, 100, .85) 0 12%, transparent 13%), radial-gradient(circle at 30% 28%, #a9e6ff, #2f7bd8 38%, #123a7a 72%, #071633); --glow: rgba(80, 170, 255, .5); }
@@ -39,8 +42,8 @@ strong { font-weight: 650; color: var(--text); }
 .glass { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
 
 /* ① 首页：名字为恒星，模块为行星 */
-.hub { --c1: #4fd1ff; --c2: #8b7bff; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; align-content: center; gap: 12px; padding: 32px 16px; overflow: hidden; background: radial-gradient(ellipse at 22% 18%, rgba(139, 123, 255, .16), transparent 45%), radial-gradient(ellipse at 80% 78%, rgba(79, 209, 255, .11), transparent 45%), radial-gradient(circle at 50% 45%, rgba(40, 70, 150, .28), transparent 55%); }
-.orbit { --R: min(290px, 40vw, 38vh); --P: 112px; --rx: 0deg; --ry: 0deg; position: relative; z-index: 2; width: calc(var(--R) * 2 + var(--P)); height: calc(var(--R) * 2 + var(--P)); transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .4s ease-out; animation: orbit-spin 90s linear infinite; }
+.hub { --c1: #4fd1ff; --c2: #8b7bff; min-height: calc(100vh / var(--k)); min-height: calc(100svh / var(--k)); display: grid; place-items: center; align-content: center; gap: 12px; padding: 32px 16px; overflow: hidden; background: radial-gradient(ellipse at 22% 18%, rgba(139, 123, 255, .16), transparent 45%), radial-gradient(ellipse at 80% 78%, rgba(79, 209, 255, .11), transparent 45%), radial-gradient(circle at 50% 45%, rgba(40, 70, 150, .28), transparent 55%); }
+.orbit { --R: min(290px, calc(40vw / var(--k)), calc(38vh / var(--k))); --P: 112px; --rx: 0deg; --ry: 0deg; position: relative; z-index: 2; width: calc(var(--R) * 2 + var(--P)); height: calc(var(--R) * 2 + var(--P)); transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .4s ease-out; animation: orbit-spin 90s linear infinite; }
 /* 行星绕恒星公转；鼠标停在任一行星上（或键盘聚焦）时暂停 */
 .orbit:has(.planet:hover, .planet:focus-visible) { animation-play-state: paused; }
 @keyframes orbit-spin { to { --spin: 360deg; } }
@@ -66,7 +69,7 @@ strong { font-weight: 650; color: var(--text); }
 .avatar { position: relative; width: 150px; height: 188px; border-radius: 16px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
 .avatar span { color: #fff; font-size: 64px; font-weight: 700; }
 .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.core h1 { margin: 16px 0 0; color: #fff; font-size: clamp(30px, 4.4vw, 44px); line-height: 1.15; letter-spacing: .06em; text-shadow: 0 0 22px rgba(79, 209, 255, .35); }
+.core h1 { margin: 16px 0 0; color: #fff; font-size: clamp(30px, calc(4.4vw / var(--k)), 44px); line-height: 1.15; letter-spacing: .06em; text-shadow: 0 0 22px rgba(79, 209, 255, .35); }
 .core-role { margin: 6px 0 0; color: var(--c1); font-size: 15px; font-weight: 600; letter-spacing: .08em; }
 .core-type { min-height: 1.6em; margin: 4px 0 0; color: var(--muted); font-family: var(--mono); font-size: 13px; }
 .core-type::before { content: "> "; color: var(--c2); }
@@ -131,7 +134,7 @@ strong { font-weight: 650; color: var(--text); }
 @keyframes nova { 20% { scale: 2.6; opacity: 1; background: radial-gradient(circle, rgba(255, 245, 220, .9), rgba(255, 170, 90, .35) 35%, transparent 65%); } }
 
 /* ② 详情页 */
-.detail { display: none; min-height: 100vh; overflow-x: clip; }
+.detail { display: none; min-height: calc(100vh / var(--k)); overflow-x: clip; }
 body.in-detail .hub { display: none; }
 body.in-detail .detail { display: block; }
 .detail-bar { position: sticky; top: 0; z-index: 20; background: rgba(5, 8, 18, .72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
@@ -147,7 +150,7 @@ body.in-detail .detail { display: block; }
 [data-view].is-active { display: block; animation: view-in .5s ease both; }
 @keyframes view-in { from { opacity: 0; transform: translateY(14px); } }
 .section { position: relative; padding: 44px 0 96px; }
-.section > *:not(.big-planet) { position: relative; z-index: 1; }
+.section > *:not(.big-planet, .deco) { position: relative; z-index: 1; }
 /* 详情页背景的大行星，与首页对应模块一致 */
 .big-planet { position: absolute; z-index: 0; right: -110px; top: -10px; width: 320px; aspect-ratio: 1; border-radius: 50%; background: var(--globe); box-shadow: inset -46px -36px 70px rgba(0, 0, 0, .7), 0 0 90px var(--glow); opacity: .5; pointer-events: none; animation: float 9s ease-in-out infinite; }
 .big-planet.p-jupiter { background-size: 100% 100%, 200% 100%; animation: float 9s ease-in-out infinite, bands 30s linear infinite; }
@@ -167,6 +170,29 @@ body.in-detail .detail { display: block; }
 .section-head { margin-bottom: 26px; }
 .section-head .eyebrow { margin: 0 0 4px; color: var(--accent); font-family: var(--mono); font-size: 13px; letter-spacing: .14em; }
 .section-head h2 { margin: 0; color: #fff; font-size: 30px; line-height: 1.3; }
+
+/* 详情页（项目页除外）：内容在屏幕内垂直居中 */
+.section[data-view]:not(.projects).is-active { display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh / var(--k) - 58px); min-height: calc(100svh / var(--k) - 58px); padding: 40px 0 70px; }
+.section[data-view]:not(.projects).is-active > .section-head { align-self: flex-start; }
+
+/* 详情页装饰：行星轨道与小卫星、北斗七星、人造卫星 */
+.deco { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.deco-orbit { position: absolute; right: -110px; top: -10px; width: 320px; aspect-ratio: 1; }
+.deco-orbit i { position: absolute; left: 50%; top: 50%; border: 1px dashed rgba(79, 209, 255, .22); border-radius: 50%; translate: -50% -50%; rotate: -16deg; scale: 1 .42; }
+.deco-orbit i:nth-child(1) { width: 150%; aspect-ratio: 1; }
+.deco-orbit i:nth-child(2) { width: 190%; aspect-ratio: 1; border-color: rgba(139, 123, 255, .16); }
+.deco-moon { position: absolute; left: 50%; top: 50%; width: 0; height: 0; rotate: -16deg; scale: 1 .42; }
+.deco-moon::before { content: ""; position: absolute; width: 14px; height: 14px; margin: -7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #9fb6d8 55%, #4a5a78); box-shadow: 0 0 12px rgba(200, 225, 255, .6); offset-path: circle(240px at 0 0); animation: moon 26s linear infinite; }
+@keyframes moon { to { offset-distance: 100%; } }
+.deco-stars { position: absolute; left: -40px; bottom: 26px; width: 240px; height: 140px; opacity: .85; }
+.deco-stars line { stroke: rgba(79, 209, 255, .28); stroke-width: 1; stroke-dasharray: 3 4; }
+.deco-stars circle { fill: #dff3ff; filter: drop-shadow(0 0 4px #9fdcff); animation: tw 3s ease-in-out infinite; }
+.deco-stars circle:nth-of-type(2n) { animation-delay: -1.2s; }
+.deco-stars circle:nth-of-type(3n) { animation-delay: -2.1s; }
+.deco-stars text { fill: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .2em; }
+@keyframes tw { 50% { opacity: .35; } }
+.deco-sat { position: absolute; right: 30px; bottom: 34px; width: 110px; opacity: .8; animation: sat 14s ease-in-out infinite; }
+@keyframes sat { 0%, 100% { translate: 0 0; rotate: -8deg; } 50% { translate: -40px -24px; rotate: 6deg; } }
 
 /* 关于我 */
 .about { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
@@ -273,13 +299,15 @@ body.in-detail .detail { display: block; }
 
 /* 桌面端：项目页固定在一屏内，不随页面滚动 */
 @media (min-width: 901px) {
-  .projects.is-active { display: flex; flex-direction: column; height: calc(100vh - 58px); height: calc(100svh - 58px); padding: 26px 0 22px; }
+  .projects.is-active { display: flex; flex-direction: column; height: calc(100vh / var(--k) - 58px); height: calc(100svh / var(--k) - 58px); padding: 26px 0 22px; }
   .projects .project.is-current { flex: 1; min-height: 0; align-items: center; }
   .projects .star-steps { min-height: 300px; }
-  .projects .step { max-height: calc(100vh - 360px); max-height: calc(100svh - 360px); overflow-y: auto; scrollbar-width: thin; }
+  .projects .step { max-height: calc(100vh / var(--k) - 360px); max-height: calc(100svh / var(--k) - 360px); overflow-y: auto; scrollbar-width: thin; }
 }
 @media (max-width: 900px) {
   .about { grid-template-columns: minmax(0, 1fr); }
+  .deco-orbit, .deco-sat { display: none; }
+  .deco-stars { opacity: .45; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .skill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .big-planet { width: 220px; right: -90px; opacity: .35; }
@@ -291,7 +319,7 @@ body.in-detail .detail { display: block; }
 }
 @media (max-width: 640px) {
   .wrap { padding: 0 16px; }
-  .orbit { --R: min(42vw, 170px); --P: 78px; }
+  .orbit { --R: min(calc(42vw / var(--k)), 170px); --P: 78px; }
   .avatar { width: 80px; height: 100px; border-radius: 12px; }
   .avatar-wrap { border-radius: 15px; }
   .corona { top: 52px; width: 220px; height: 220px; }
