@@ -102,33 +102,33 @@
             <h3>宠物意图理解 Agent</h3>
             <span class="when">深圳市宠智联科技 · 2026.05 – 至今</span>
           </div>
-          <p class="project-sub">结合宠物视频和项圈行为记录，回答主人“它这是想干嘛”。</p>
+          <p class="project-sub">融合音视频与项圈六轴时序证据的多模态意图理解系统。</p>
           <ul class="chapters" data-chapters="v-pet">
-            <li><button data-t="0"><time>0:00</time>案例 1 · 视频和项圈记录一致</button></li>
-            <li><button data-t="17"><time>0:17</time>案例 2 · 两边冲突，先追问</button></li>
-            <li><button data-t="49"><time>0:49</time>系统结构</button></li>
+            <li><button data-t="0"><time>0:00</time>案例 1 · 多源证据一致</button></li>
+            <li><button data-t="17"><time>0:17</time>案例 2 · 证据冲突与澄清追问</button></li>
+            <li><button data-t="49"><time>0:49</time>系统架构</button></li>
           </ul>
           <dl class="star">
             <dt>背景<small>SITUATION</small></dt>
-            <dd>主人常看不懂宠物想要什么，而且同一个动作在不同时间意思不同：早上蹲门口多半是要上厕所，下午可能只是想出去玩。只看一段十几秒的视频，看不到这些前因后果。</dd>
+            <dd>宠物行为意图高度依赖时序上下文，同一动作在不同时段语义不同；仅凭十余秒的视频片段，单一视觉模型缺乏判断所需的前因后果。</dd>
             <dt>任务<small>TASK</small></dt>
-            <dd>让 App 结合视频和这只宠物自己的项圈记录判断意图；两边证据对不上时，不能随便给答案。</dd>
+            <dd>融合视频理解与个体化的项圈行为记录进行意图推断，并在跨模态证据冲突时保证系统不输出无依据结论。</dd>
             <dt>行动<small>ACTION</small></dt>
             <dd>
               <ul>
-                <li>微调 Qwen2.5-Omni-7B 做音视频理解，联合训犬师、猫行为分析师复核标注数据。</li>
-                <li>做项圈六轴行为识别：自监督预训练提升识别效果，量化感知训练后端侧模型仅 21.6 KB；实时识别服务经 MQTT 接入项圈与 App。</li>
-                <li>用 LangGraph 搭多 Agent 系统：按“拍摄那一刻 / 前后半小时 / 近 7 天”查行为记录，先提候选意图再逐个查证，冲突时向主人追问，对话可跨进程恢复。</li>
-                <li>证据引用和结论由代码强制校验，用 59 项故障注入测试保证服务稳定。</li>
+                <li>基于 Qwen2.5-Omni-7B 原生音视频建模与领域 LoRA 微调，联合训犬师 / 猫行为分析师建立专家复核的标注流程。</li>
+                <li>构建六轴 IMU 端侧行为识别模型，结合自监督预训练与量化感知训练（QAT），模型压缩至 21.6 KB，经 MQTT 实时识别服务接入项圈与 App。</li>
+                <li>基于 LangGraph 设计多 Agent 系统，按拍摄时刻、前后时段、近 7 天三层时间窗检索行为证据，采用假设—验证式工具调用，冲突时触发澄清追问，基于 checkpoint 实现跨进程会话恢复。</li>
+                <li>以代码级输出校验约束证据引用与结论，59 项故障注入测试全部通过。</li>
               </ul>
             </dd>
             <dt>结果<small>RESULT</small></dt>
             <dd>
               <div class="results">
-                <div class="result"><b>+15.6 / +41.2</b><span>猫 / 狗分类准确率较原厂模型提升（百分点）</span></div>
-                <div class="result"><b>全部</b><span>视频模型单独判错的测试案例，都改为先追问</span></div>
-                <div class="result"><b>12 → 1</b><span>静音下仍“听到”叫声的猫视频（64 条中）</span></div>
-                <div class="result"><b>116 / 117</b><span>多轮测试中 Agent 行为符合预期的轮数</span></div>
+                <div class="result"><b>+15.6 / +41.2</b><span>猫 / 狗分类准确率较基座模型提升（百分点）</span></div>
+                <div class="result"><b>100%</b><span>单视频模型误判样本转入澄清追问</span></div>
+                <div class="result"><b>12 → 1</b><span>静音输入下音频幻觉样本数（猫，n=64）</span></div>
+                <div class="result"><b>116 / 117</b><span>多轮评测中 Agent 行为合规轮次</span></div>
               </div>
             </dd>
           </dl>
@@ -146,35 +146,35 @@
             <h3>研报数字核查 Agent</h3>
             <span class="when">2026.03 – 2026.10</span>
           </div>
-          <p class="project-sub">研报发出前，把每个数字对回上市公司年报原文。演示稿件为比亚迪 2024 年年报点评。</p>
+          <p class="project-sub">研报发布前的数字事实核查系统，逐条溯源至上市公司年报原文。演示稿件为比亚迪 2024 年年报点评。</p>
           <ul class="chapters" data-chapters="v-fin">
-            <li><button data-t="0"><time>0:00</time>提交稿件</button></li>
+            <li><button data-t="0"><time>0:00</time>稿件提交</button></li>
             <li><button data-t="9"><time>0:09</time>复查 Agent</button></li>
             <li><button data-t="15"><time>0:15</time>修订建议</button></li>
-            <li><button data-t="24"><time>0:24</time>点数字看原件</button></li>
-            <li><button data-t="35"><time>0:35</time>系统结构</button></li>
+            <li><button data-t="24"><time>0:24</time>原文溯源</button></li>
+            <li><button data-t="35"><time>0:35</time>系统架构</button></li>
           </ul>
           <dl class="star">
             <dt>背景<small>SITUATION</small></dt>
-            <dd>研报里的数字都要能对上年报原文，但质控人手有限、时效又紧。越来越多人用 AI 写稿，写得很流畅，数字却常常是错的：实测不给原文时，模型写的点评里 77%–84% 的数字有错。</dd>
+            <dd>研报数据须与原始披露逐条一致，而质控人力与发布时效双重受限；生成式模型撰写的点评数字错误率在无原文条件下达 77%–84%。</dd>
             <dt>任务<small>TASK</small></dt>
-            <dd>发稿前自动核查每个数字，给出原文值和出处页码，并且不能漏掉实质性错误。</dd>
+            <dd>在发布前自动核查稿件中的每个数字，输出原文值与出处定位，并确保实质性错误零漏检。</dd>
             <dt>行动<small>ACTION</small></dt>
             <dd>
               <ul>
-                <li>把 30 家上市公司 25,224 页年报解析成 53.7 万条事实，每个数字都定位到 PDF 原文位置；核对时只用写稿日之前已披露的文件。</li>
-                <li>不让大模型当裁判：模型只负责抽取数字，对错由代码查年报库判定；抽取模型是用 FSDP + LoRA 微调的本地 Qwen3.5-9B，稿件可不出本机。</li>
-                <li>用 LangGraph 编排抽取、核查、复查、修订四个 Agent；对比实验后规定复查 Agent 只能新增告警、不能放行。</li>
-                <li>做了人工核查页：点击稿件里的数字，直接打开年报原件并框出出处。</li>
+                <li>基于 MinerU 版面解析与 PDF 文本层对齐，将 30 家上市公司 25,224 页年报构建为 53.7 万条可溯源结构化事实，并按披露日实施时点控制，规避前视偏差。</li>
+                <li>设计“LLM 结构化抽取 + 规则引擎核验”的混合架构，LLM 仅承担信息抽取，核验结论由确定性规则给出；以 FSDP + LoRA 微调 Qwen3.5-9B 抽取模型，支持本地私有化部署。</li>
+                <li>基于 LangGraph 编排抽取、核验、复查、修订四个 Agent，经与单 Agent 基线对照，引入复查 Agent 单向告警约束。</li>
+                <li>构建证据溯源审核页，支持由稿件数字直接定位并框选年报原件出处。</li>
               </ul>
             </dd>
             <dt>结果<small>RESULT</small></dt>
             <dd>
               <div class="results">
-                <div class="result"><b>95.3%</b><span>封存测试集上的错误召回率</span></div>
-                <div class="result"><b>0 vs 111</b><span>实质性错误漏检（本系统 vs 大模型直接审稿）</span></div>
+                <div class="result"><b>95.3%</b><span>封存验收集错误召回率</span></div>
+                <div class="result"><b>0 vs 111</b><span>实质性错误漏检（本系统 vs 端到端审稿基线）</span></div>
                 <div class="result"><b>2.95%</b><span>误报率</span></div>
-                <div class="result"><b>46 → 7</b><span>微调后本地抽取模型的误报</span></div>
+                <div class="result"><b>46 → 7</b><span>微调后抽取模型误报数</span></div>
               </div>
             </dd>
           </dl>
@@ -187,7 +187,7 @@
             <h3>GSM8K 数学推理后训练</h3>
             <span class="when">2026.01</span>
           </div>
-          <p class="project-sub">基于 Qwen3-4B 完成 SFT → DPO → 奖励模型 → Best-of-5 重排的后训练流程，偏好数据取自模型自身的错误回答。GSM8K 完整测试集（1,319 题）exact match：基座 78.62% → SFT + DPO 82.64% → 奖励模型重排 <strong>87.04%</strong>。</p>
+          <p class="project-sub">基于 Qwen3-4B-Instruct 搭建 LoRA SFT → DPO → 奖励模型 → Best-of-5 重排的后训练链路，以 on-policy 错误样本构造 762 对偏好数据。GSM8K 全量测试集（1,319 题）exact match：基座 78.62% → SFT 81.12% → DPO 82.64% → 奖励模型重排 <strong>87.04%</strong>，并对训练增益与推理期重排增益分别归因。</p>
         </div>
       </article>
     </section>
@@ -203,16 +203,17 @@
           <div class="tl-when">2026.05 – 至今</div>
           <h3 class="tl-title">深圳市宠智联科技有限公司 <span>· 大模型工程师</span></h3>
           <ul>
-            <li>独立负责宠物音视频理解模型，从数据构建、领域微调到推理服务；猫 / 狗分类准确率较原厂模型分别提升 15.6、41.2 个百分点。</li>
-            <li>负责项圈六轴行为识别的模型与交付，2026.08 接入项圈与 App；交付 21.6 KB 的 INT8 端侧推理包和 MQTT 实时识别服务。</li>
-            <li>设计意图理解 Agent，把视频判断和项圈记录结合起来，证据冲突时主动追问主人。</li>
+            <li>独立负责宠物音视频理解模型从数据、训练到推理服务的全链路；领域 LoRA 微调后猫 / 狗分类准确率较基座提升 15.6 / 41.2 个百分点，相关论文投稿中。</li>
+            <li>负责六轴 IMU 端侧行为识别模型的训练与交付，结合自监督预训练与 QAT，交付 21.6 KB 的 INT8 端侧推理包及 MQTT 实时识别服务。</li>
+            <li>设计融合视频与六轴时序证据的多 Agent 意图理解系统，跨模态证据冲突时触发澄清追问。</li>
           </ul>
         </li>
         <li>
           <div class="tl-when">2025.04 – 2026.05</div>
           <h3 class="tl-title">北京市润平知识产权代理有限公司 <span>· AI 专利代理师</span></h3>
           <ul>
-            <li>分析 AI 源代码与技术文献，把深度学习、Agent、多模态方案拆解为技术问题、实现机制与创新点，撰写专利申请材料。</li>
+            <li>负责 AI 领域发明专利撰写，将深度学习、Agent 与多模态方案提炼为“技术问题—实现机制—创新点”。</li>
+            <li>参与专利代理 Agent 研发，构建专利指令数据集并参与 Qwen2.5-7B-Instruct 的 LoRA 多任务微调，设计“规划—撰写—审查”多 Agent 流程。</li>
           </ul>
         </li>
       </ol>
