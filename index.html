@@ -27,7 +27,6 @@
       <div>
         <p class="hero-kicker">大模型 / Agent 工程师</p>
         <h1>魏楚琪</h1>
-        <p class="tagline">专注多模态大模型与 Agent 系统，覆盖领域微调、后训练、多 Agent 编排与生产部署。</p>
         <ul class="facts">
           <li>深圳 · 在职</li>
           <li>意向城市不限</li>
@@ -54,8 +53,8 @@
       </div>
       <div class="about">
         <div class="about-text">
-          <p>大模型工程师，现任职于深圳市宠智联科技有限公司，负责宠物智能硬件产品线的核心算法：音视频大模型的领域适配、项圈六轴行为识别与端侧部署，以及融合多源证据的意图理解 Agent。</p>
-          <p>技术方向集中在三个层面：模型层，基于 LoRA 与 FSDP 的领域微调与后训练（SFT、DPO、奖励模型）；系统层，基于 LangGraph 的多 Agent 编排、人在回路与异步服务化；评测层，以固定评测集、消融实验与配对统计检验支撑技术选型。</p>
+          <p>具备大模型训练与 Agent 系统研发能力，覆盖多模态理解、金融文档、专利文本与端侧时序等场景，可独立完成领域数据构建、微调与后训练、多 Agent 架构设计及评测驱动的工程落地。</p>
+          <p>现任职于深圳市宠智联科技有限公司，负责宠物智能硬件产品线的核心算法：音视频大模型的领域适配、项圈六轴行为识别与端侧部署，以及融合多源证据的意图理解 Agent。</p>
         </div>
         <aside class="about-card">
           <dl>
@@ -74,13 +73,12 @@
         <h2>技能栈</h2>
       </div>
       <dl class="skill-list">
-        <dt>模型训练</dt><dd>PyTorch · Transformers · PEFT / LoRA · FSDP · TRL · LLaMA Factory · vLLM</dd>
-        <dt>后训练</dt><dd>SFT · DPO · 奖励模型 · Best-of-N 重排</dd>
+        <dt>模型训练</dt><dd>PyTorch · Transformers · PEFT / LoRA · TRL · LLaMA Factory · FSDP · DeepSpeed ZeRO-3 · vLLM</dd>
+        <dt>后训练</dt><dd>SFT · DPO · 奖励模型 · Best-of-N 重排 · 偏好数据构建</dd>
         <dt>多模态</dt><dd>Qwen2.5-Omni · Qwen3.5 · CLAP · TMRoPE · IMU 时序建模 · 自监督预训练 · QAT / INT8 · TFLite Micro</dd>
-        <dt>Agent</dt><dd>LangGraph · 多 Agent 编排 · 工具调用 · 人在回路 · Checkpoint 恢复 · MCP</dd>
-        <dt>检索</dt><dd>BM25 · Milvus · BGE-M3 · RRF 混合检索 · Cross-Encoder 重排 · 上下文压缩</dd>
-        <dt>工程</dt><dd>Python · FastAPI · SSE · MQTT · Redis · PostgreSQL · SQLite · Docker · GitHub Actions</dd>
-        <dt>评测</dt><dd>消融实验 · 配对 Bootstrap · McNemar 检验 · 故障注入测试</dd>
+        <dt>Agent</dt><dd>LangGraph · LangChain · ReAct 工具调用 · 多 Agent 编排与路由 · 人在回路 · Checkpoint 恢复 · 结构化输出校验 · MCP</dd>
+        <dt>RAG 与检索</dt><dd>BM25 · Milvus · BGE-M3 · RRF 混合检索 · Cross-Encoder 重排 · 上下文压缩 · 来源溯源</dd>
+        <dt>工程栈</dt><dd>Python · FastAPI · SSE · MQTT · Redis · PostgreSQL · SQLite · Docker · GitHub Actions</dd>
       </dl>
     </section>
 
@@ -144,7 +142,7 @@
         <div class="project-body">
           <div class="project-head">
             <h3>研报数字核查 Agent</h3>
-            <span class="when">2026.03 – 2026.10</span>
+            <span class="when">2026.03 – 2026.09</span>
           </div>
           <p class="project-sub">研报发布前的数字事实核查系统，逐条溯源至上市公司年报原文。演示稿件为比亚迪 2024 年年报点评。</p>
           <ul class="chapters" data-chapters="v-fin">
@@ -162,7 +160,7 @@
             <dt>行动<small>ACTION</small></dt>
             <dd>
               <ul>
-                <li>基于 MinerU 版面解析与 PDF 文本层对齐，将 30 家上市公司 25,224 页年报构建为 53.7 万条可溯源结构化事实，并按披露日实施时点控制，规避前视偏差。</li>
+                <li>基于版面解析与 PDF 文本层对齐，将 30 家上市公司 25,224 页年报构建为 53.7 万条可溯源结构化事实，并按披露日实施时点控制，规避前视偏差。</li>
                 <li>设计“LLM 结构化抽取 + 规则引擎核验”的混合架构，LLM 仅承担信息抽取，核验结论由确定性规则给出；以 FSDP + LoRA 微调 Qwen3.5-9B 抽取模型，支持本地私有化部署。</li>
                 <li>基于 LangGraph 编排抽取、核验、复查、修订四个 Agent，经与单 Agent 基线对照，引入复查 Agent 单向告警约束。</li>
                 <li>构建证据溯源审核页，支持由稿件数字直接定位并框选年报原件出处。</li>
@@ -185,7 +183,7 @@
         <div class="project-body">
           <div class="project-head">
             <h3>GSM8K 数学推理后训练</h3>
-            <span class="when">2026.01</span>
+            <span class="when">2025.12 – 2026.03</span>
           </div>
           <p class="project-sub">基于 Qwen3-4B-Instruct 搭建 LoRA SFT → DPO → 奖励模型 → Best-of-5 重排的后训练链路，以 on-policy 错误样本构造 762 对偏好数据。GSM8K 全量测试集（1,319 题）exact match：基座 78.62% → SFT 81.12% → DPO 82.64% → 奖励模型重排 <strong>87.04%</strong>，并对训练增益与推理期重排增益分别归因。</p>
         </div>

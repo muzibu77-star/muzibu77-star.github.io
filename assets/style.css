@@ -83,7 +83,7 @@ strong { font-weight: 650; color: var(--text); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 :root[data-theme="dark"] .btn.primary { color: #0e1420; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0e1420; } }
-.avatar { position: relative; width: 200px; height: 200px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow); border: 4px solid var(--surface); }
+.avatar { position: relative; width: 224px; height: 280px; border-radius: 18px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow); border: 4px solid var(--surface); }
 .avatar span { color: #fff; font-size: 84px; font-weight: 700; letter-spacing: 0; }
 .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
@@ -109,9 +109,9 @@ strong { font-weight: 650; color: var(--text); }
 .tags li { padding: 3px 11px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); font-size: 13.5px; }
 .tags li.core { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .skills-note { margin: 14px 0 0; color: var(--muted); font-size: 13.5px; }
-.skill-list { display: grid; grid-template-columns: 112px minmax(0, 1fr); margin: 0; border-top: 1px solid var(--line); font-size: 15.5px; }
+.skill-list { display: grid; grid-template-columns: max-content minmax(0, 1fr); margin: 0; border-top: 1px solid var(--line); font-size: 15.5px; }
 .skill-list dt, .skill-list dd { padding: 12px 0; border-bottom: 1px solid var(--line); }
-.skill-list dt { color: var(--text); font-weight: 650; }
+.skill-list dt { padding-right: 28px; color: var(--text); font-weight: 650; white-space: nowrap; }
 .skill-list dd { margin: 0; color: var(--text-2); }
 
 /* ④ 项目经历 */
@@ -175,7 +175,7 @@ strong { font-weight: 650; color: var(--text); }
   .nav { gap: 14px; font-size: 14px; }
   .nav .hide-sm { display: none; }
   .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 48px; padding-bottom: 48px; }
-  .avatar { width: 112px; height: 112px; order: -1; }
+  .avatar { width: 120px; height: 150px; border-radius: 12px; order: -1; }
   .avatar span { font-size: 46px; }
   .section { padding-top: 56px; }
   .project-body { padding: 20px 18px 22px; }
